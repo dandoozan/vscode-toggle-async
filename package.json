@@ -10,14 +10,14 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:augment-functions.toggleAsync"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "augment-functions.toggleAsync",
+                "title": "Toggle Async"
             }
         ]
     },
@@ -32,6 +32,12 @@
         "typescript": "^2.6.1",
         "vscode": "^1.1.21",
         "@types/node": "^8.10.25",
-        "@types/mocha": "^2.2.42"
+        "@types/mocha": "^2.2.42",
+        "@types/lodash": "^4.14.119"
+    },
+    "dependencies": {
+        "@babel/parser": "^7.2.2",
+        "@babel/types": "^7.2.2",
+        "lodash": "^4.17.11"
     }
 }
