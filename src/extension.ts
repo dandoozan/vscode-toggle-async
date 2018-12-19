@@ -16,7 +16,7 @@ function getAstOfFile(document: vscode.TextDocument) {
         return babelParser.parse(fullFileText, {
             sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
 
-            //add these to make the parser as lenient as possible
+            //make the parser as lenient as possible
             allowImportExportEverywhere: true,
             allowAwaitOutsideFunction: true,
             allowReturnOutsideFunction: true,
@@ -66,17 +66,26 @@ export function findEnclosingFunction(
         const allFunctions = extractAllFunctions(ast);
 
         //enclosingFunctions will have more than one element when there are
-        //nested functions.  In this case, we want to return the nearest enclosing
-        //function, which is the one with the last "start" value
+        //nested functions
         const enclosingFunctions = allFunctions.filter(functionNode => {
             if (
                 _.isNumber(functionNode.start) &&
                 _.isNumber(functionNode.end)
             ) {
-                return (
-                    cursorLocationAsOffset >= functionNode.start &&
-                    cursorLocationAsOffset < functionNode.end
-                );
+                if (functionNode.body.type === 'BlockStatement') {
+                    return (
+                        cursorLocationAsOffset >= functionNode.start &&
+                        cursorLocationAsOffset < functionNode.end
+                    );
+                } else {
+                    //this is for the special case of an arrow function that has
+                    //a body not surrounded by curly braces (eg. "() => true");
+                    //in this case, the last char is still part of the function.
+                    return (
+                        cursorLocationAsOffset >= functionNode.start &&
+                        cursorLocationAsOffset <= functionNode.end
+                    );
+                }
             }
             return false;
         });
