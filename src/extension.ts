@@ -5,15 +5,14 @@ import * as babelParser from '@babel/parser';
 import * as _ from 'lodash';
 import { isFunction, Node, Function } from '@babel/types';
 
-function getAstOfFile(document: vscode.TextDocument) {
-    const fullFileText = document.getText();
+function generateAst(code: string) {
 
     //use try-catch b/c babel will throw an error if it can't parse the file
     //(ie. if it runs into a "SyntaxError" or something that it can't handle)
     //In this case, display a notification that an error occurred so that the
     //user knows why the command didn't work
     try {
-        return babelParser.parse(fullFileText, {
+        return babelParser.parse(code, {
             sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
 
             //make the parser as lenient as possible
@@ -57,11 +56,11 @@ function extractAllFunctions(astNode: Node) {
 }
 
 export function findEnclosingFunction(
-    document: vscode.TextDocument,
+    code: string,
     cursorLocationAsOffset: number
 ) {
     //parse file
-    const ast = getAstOfFile(document);
+    const ast = generateAst(code);
     if (ast) {
         const allFunctions = extractAllFunctions(ast);
 
@@ -147,7 +146,7 @@ async function toggleAsync() {
         );
 
         const enclosingFunctionNode = findEnclosingFunction(
-            currentEditor.document,
+            currentEditor.document.getText(),
             cursorLocationAsOffset
         );
 

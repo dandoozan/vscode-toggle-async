@@ -15,12 +15,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = 0;
             const expectedStartOfFunction = 0;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -36,12 +32,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = Math.round(code.length / 2);
             const expectedStartOfFunction = 0;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -56,12 +48,8 @@ describe('findEnclosingFunction', () => {
         it('should return null when cursor is at end of function', async () => {
             const cursorPositionAsOffset = code.length;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             assert.equal(enclosingFunction, null);
@@ -75,12 +63,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = 0;
             const expectedStartOfFunction = 0;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -96,12 +80,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = Math.round(code.length / 2);
             const expectedStartOfFunction = 0;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -116,12 +96,8 @@ describe('findEnclosingFunction', () => {
         it('should return null when cursor is at end of function', async () => {
             const cursorPositionAsOffset = code.length;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             assert.equal(enclosingFunction, null);
@@ -133,12 +109,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = code.length;
             const expectedStartOfFunction = 0;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -162,29 +134,17 @@ describe('findEnclosingFunction', () => {
             '}\n';
 
         it('should return inner function when cursor is in nested function', async () => {
-            const cursorLine = 3;
-            const cursorCharacter = 0; //beginning of the line
-            const expectedStartOfFunctionLine = 2;
-            const expectedStartOfFunctionCharacter = 8;
+            const cursorPositionAsOffset = code.indexOf('innerFunction');
+            const expectedStartOfFunction = code.indexOf(
+                'function innerFunction'
+            );
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
-                doc.offsetAt(new vscode.Position(cursorLine, cursorCharacter))
+                code,
+                cursorPositionAsOffset
             );
             if (enclosingFunction) {
-                assert.equal(
-                    enclosingFunction.start,
-                    doc.offsetAt(
-                        new vscode.Position(
-                            expectedStartOfFunctionLine,
-                            expectedStartOfFunctionCharacter
-                        )
-                    )
-                );
+                assert.equal(enclosingFunction.start, expectedStartOfFunction);
             } else {
                 assert.fail(
                     `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -193,29 +153,17 @@ describe('findEnclosingFunction', () => {
         });
 
         it('should return middle function when cursor is in middle nested function', async () => {
-            const cursorLine = 2;
-            const cursorCharacter = 0;
-            const expectedStartOfFunctionLine = 1;
-            const expectedStartOfFunctionCharacter = 4;
+            const cursorPositionAsOffset = code.indexOf('middleFunction');
+            const expectedStartOfFunction = code.indexOf(
+                'function middleFunction'
+            );
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
-                doc.offsetAt(new vscode.Position(cursorLine, cursorCharacter))
+                code,
+                cursorPositionAsOffset
             );
             if (enclosingFunction) {
-                assert.equal(
-                    enclosingFunction.start,
-                    doc.offsetAt(
-                        new vscode.Position(
-                            expectedStartOfFunctionLine,
-                            expectedStartOfFunctionCharacter
-                        )
-                    )
-                );
+                assert.equal(enclosingFunction.start, expectedStartOfFunction);
             } else {
                 assert.fail(
                     `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -224,29 +172,17 @@ describe('findEnclosingFunction', () => {
         });
 
         it('should return outer function when cursor is in outer function', async () => {
-            const cursorLine = 1;
-            const cursorCharacter = 0;
-            const expectedStartOfFunctionLine = 0;
-            const expectedStartOfFunctionCharacter = 0;
+            const cursorPositionAsOffset = code.indexOf('outerFunction');
+            const expectedStartOfFunction = code.indexOf(
+                'function outerFunction'
+            );
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
-                doc.offsetAt(new vscode.Position(cursorLine, cursorCharacter))
+                code,
+                cursorPositionAsOffset
             );
             if (enclosingFunction) {
-                assert.equal(
-                    enclosingFunction.start,
-                    doc.offsetAt(
-                        new vscode.Position(
-                            expectedStartOfFunctionLine,
-                            expectedStartOfFunctionCharacter
-                        )
-                    )
-                );
+                assert.equal(enclosingFunction.start, expectedStartOfFunction);
             } else {
                 assert.fail(
                     `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -264,12 +200,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = startOfFunction;
             const expectedStartOfFunction = startOfFunction;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -285,12 +217,8 @@ describe('findEnclosingFunction', () => {
             const cursorPositionAsOffset = Math.round(code.length / 2);
             const expectedStartOfFunction = startOfFunction;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             if (enclosingFunction) {
@@ -305,12 +233,8 @@ describe('findEnclosingFunction', () => {
         it('should return null when cursor is at end of function', async () => {
             const cursorPositionAsOffset = endOfFunction;
 
-            const doc = await vscode.workspace.openTextDocument({
-                content: code,
-                language: 'javascript',
-            });
             const enclosingFunction = myExtension.findEnclosingFunction(
-                doc,
+                code,
                 cursorPositionAsOffset
             );
             assert.equal(enclosingFunction, null);
