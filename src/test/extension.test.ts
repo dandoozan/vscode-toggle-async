@@ -9,7 +9,7 @@ import * as myExtension from '../extension';
 
 describe('findEnclosingFunction', () => {
     describe('Regular Functions', () => {
-        const code = `function foo() {}`;
+        const code = 'function foo() {}';
 
         it('should return the function when cursor is at start of function', async () => {
             const cursorPositionAsOffset = 0;
@@ -69,7 +69,7 @@ describe('findEnclosingFunction', () => {
     });
 
     describe('Arrow Functions', () => {
-        let code = `() => {}`;
+        let code = '() => {}';
 
         it('should return the function when cursor is at start of function', async () => {
             const cursorPositionAsOffset = 0;
@@ -128,7 +128,7 @@ describe('findEnclosingFunction', () => {
         });
 
         it('should return the function when cursor at end of arrow function with no block', async () => {
-            code = '() => true'
+            code = '() => true';
 
             const cursorPositionAsOffset = code.length;
             const expectedStartOfFunction = 0;
@@ -253,5 +253,83 @@ describe('findEnclosingFunction', () => {
                 );
             }
         });
+    });
+
+    describe('Methods', () => {
+        const code = '({ foo() {} })';
+        const startOfFunction = 3;
+        const endOfFunction = 11;
+
+        it('should return the function when cursor is at start of function', async () => {
+            const cursorPositionAsOffset = startOfFunction;
+            const expectedStartOfFunction = startOfFunction;
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: code,
+                language: 'javascript',
+            });
+            const enclosingFunction = myExtension.findEnclosingFunction(
+                doc,
+                cursorPositionAsOffset
+            );
+            if (enclosingFunction) {
+                assert.equal(enclosingFunction.start, expectedStartOfFunction);
+            } else {
+                assert.fail(
+                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                );
+            }
+        });
+
+        it('should return the function when cursor is in middle of function', async () => {
+            const cursorPositionAsOffset = Math.round(code.length / 2);
+            const expectedStartOfFunction = startOfFunction;
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: code,
+                language: 'javascript',
+            });
+            const enclosingFunction = myExtension.findEnclosingFunction(
+                doc,
+                cursorPositionAsOffset
+            );
+            if (enclosingFunction) {
+                assert.equal(enclosingFunction.start, expectedStartOfFunction);
+            } else {
+                assert.fail(
+                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                );
+            }
+        });
+
+        it('should return null when cursor is at end of function', async () => {
+            const cursorPositionAsOffset = endOfFunction;
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: code,
+                language: 'javascript',
+            });
+            const enclosingFunction = myExtension.findEnclosingFunction(
+                doc,
+                cursorPositionAsOffset
+            );
+            assert.equal(enclosingFunction, null);
+        });
+    });
+});
+
+describe('addAsync', () => {
+    it('should add async to function', async () => {
+        const startingCode = 'function foo() {}';
+        const expectedEndingCode = 'async function foo() {}';
+
+        const doc = await vscode.workspace.openTextDocument({
+            content: startingCode,
+            language: 'javascript',
+        });
+        const editor = await vscode.window.showTextDocument(doc);
+
+        await myExtension.addAsync(editor, 0);
+        assert.equal(doc.getText(), expectedEndingCode);
     });
 });

@@ -124,7 +124,7 @@ async function removeAsync(
         });
     }
 }
-async function addAsync(
+export async function addAsync(
     editor: vscode.TextEditor,
     startOfFunctionAsOffset: number | null
 ) {
