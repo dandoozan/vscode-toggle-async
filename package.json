@@ -1,5 +1,5 @@
 {
-    "name": "augmentfunctions",
+    "name": "augment-functions",
     "displayName": "Augment Functions",
     "publisher": "dandoozan",
     "description": "Toggle \"export\" and \"async\" on functions",
