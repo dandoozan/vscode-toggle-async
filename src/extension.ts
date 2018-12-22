@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import { isFunction, Node, Function } from '@babel/types';
 
 function generateAst(code: string) {
-
     //use try-catch b/c babel will throw an error if it can't parse the file
     //(ie. if it runs into a "SyntaxError" or something that it can't handle)
     //In this case, display a notification that an error occurred so that the
@@ -23,7 +22,7 @@ function generateAst(code: string) {
         });
     } catch (e) {
         utils.notify(
-            `${utils.getExtensionName()}: Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
+            `[${utils.getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
         );
     }
     return null;
@@ -105,21 +104,38 @@ function isFunctionAsync(functionNode: Function) {
     return functionNode.async;
 }
 
-async function removeAsync(
-    editor: vscode.TextEditor,
-    startOfFunctionAsOffset: number | null
+function getFunctionText(
+    document: vscode.TextDocument,
+    functionNode: Function
 ) {
-    if (_.isNumber(startOfFunctionAsOffset)) {
-        const startOfAsyncWord = editor.document.positionAt(
-            startOfFunctionAsOffset
+    if (_.isNumber(functionNode.start) && _.isNumber(functionNode.end)) {
+        return document.getText(
+            new vscode.Range(
+                document.positionAt(functionNode.start),
+                document.positionAt(functionNode.end)
+            )
         );
-        const endOfAsyncWord = editor.document.positionAt(
-            startOfFunctionAsOffset + 6 //6 is the length of "async "
-        );
+    }
+    return '';
+}
+
+function findAsyncRange(document: vscode.TextDocument, functionText: string) {
+    const startOfAsync = functionText.indexOf('async ');
+    const endOfAsync = startOfAsync + 6; //6 is the length of "async "
+    return new vscode.Range(
+        document.positionAt(startOfAsync),
+        document.positionAt(endOfAsync)
+    );
+}
+
+export async function removeAsync(
+    editor: vscode.TextEditor,
+    functionText: string
+) {
+    const asyncRange = findAsyncRange(editor.document, functionText);
+    if (asyncRange) {
         await editor.edit(editBuilder => {
-            editBuilder.delete(
-                new vscode.Range(startOfAsyncWord, endOfAsyncWord)
-            );
+            editBuilder.delete(asyncRange);
         });
     }
 }
@@ -141,18 +157,20 @@ async function toggleAsync() {
     const currentEditor = utils.getCurrentEditor();
 
     if (currentEditor) {
-        const cursorLocationAsOffset = currentEditor.document.offsetAt(
+        const doc = currentEditor.document;
+
+        const cursorLocationAsOffset = doc.offsetAt(
             utils.getCursorPosition(currentEditor)
         );
 
         const enclosingFunctionNode = findEnclosingFunction(
-            currentEditor.document.getText(),
+            doc.getText(),
             cursorLocationAsOffset
         );
 
         if (enclosingFunctionNode) {
             //tbx
-            // const pos = currentEditor.document.positionAt(
+            // const pos = doc.positionAt(
             //     enclosingFunctionNode.start as number
             // );
             // utils.notify(`start: line=${pos.line}, char=${pos.character}`);
@@ -160,7 +178,10 @@ async function toggleAsync() {
             const startOfFunctionAsOffset = enclosingFunctionNode.start;
             if (isFunctionAsync(enclosingFunctionNode)) {
                 //if there is an async on the function, remove it
-                await removeAsync(currentEditor, startOfFunctionAsOffset);
+                await removeAsync(
+                    currentEditor,
+                    getFunctionText(doc, enclosingFunctionNode)
+                );
             } else {
                 //else, add "async" to the start of the function
                 await addAsync(currentEditor, startOfFunctionAsOffset);

@@ -1,8 +1,3 @@
-//
-// Note: This example test is leveraging the Mocha test framework.
-// Please refer to their documentation on https://mochajs.org/ for help.
-//
-
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as myExtension from '../extension';
@@ -256,4 +251,21 @@ describe('addAsync', () => {
         await myExtension.addAsync(editor, 0);
         assert.equal(doc.getText(), expectedEndingCode);
     });
+});
+
+describe('removeAsync', () => {
+    it('should remove async from function', async () => {
+        const startingCode = 'async function foo() {}';
+        const expectedEndingCode = 'function foo() {}';
+
+        const doc = await vscode.workspace.openTextDocument({
+            content: startingCode,
+            language: 'javascript',
+        });
+        const editor = await vscode.window.showTextDocument(doc);
+
+        await myExtension.removeAsync(editor, startingCode);
+        assert.equal(doc.getText(), expectedEndingCode);
+    });
+
 });
