@@ -1,9 +1,15 @@
 'use strict';
-import * as vscode from 'vscode';
-import * as utils from './utils';
-import * as babelParser from '@babel/parser';
-import * as _ from 'lodash';
 import { isFunction, Node, Function } from '@babel/types';
+import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
+import { isArray, isObject, isNumber, sortBy } from 'lodash';
+import { parse, ParserOptions } from '@babel/parser';
+import {
+    notify,
+    getExtensionName,
+    getCurrentEditor,
+    getCursorPosition,
+    addCommand,
+} from './utils';
 
 function generateAst(code: string, language: string) {
     //use try-catch b/c babel will throw an error if it can't parse the file
@@ -11,7 +17,7 @@ function generateAst(code: string, language: string) {
     //In this case, display a notification that an error occurred so that the
     //user knows why the command didn't work
     try {
-        const parserOptions: babelParser.ParserOptions = {
+        const parserOptions: ParserOptions = {
             sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
 
             //make the parser as lenient as possible
@@ -23,13 +29,13 @@ function generateAst(code: string, language: string) {
 
         //add "typescript" plugin if language is typescript
         if (language === 'typescript') {
-            parserOptions.plugins = [ 'typescript' ];
+            parserOptions.plugins = ['typescript'];
         }
 
-        return babelParser.parse(code, parserOptions);
+        return parse(code, parserOptions);
     } catch (e) {
-        utils.notify(
-            `[${utils.getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
+        notify(
+            `[${getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
         );
     }
     return null;
@@ -40,12 +46,12 @@ function extractAllFunctions(astNode: Node) {
 
     //if the current child is an array, just call extractAllFunctions on all
     //it's elements
-    if (_.isArray(astNode)) {
+    if (isArray(astNode)) {
         //call extractAllFunctions on all children
         for (const item of astNode) {
             functions = functions.concat(extractAllFunctions(item));
         }
-    } else if (_.isObject(astNode)) {
+    } else if (isObject(astNode)) {
         //check if it's a function node
         if (isFunction(astNode)) {
             //if so, add it to functions
@@ -74,10 +80,7 @@ export function findEnclosingFunction(
         //enclosingFunctions will have more than one element when there are
         //nested functions
         const enclosingFunctions = allFunctions.filter(functionNode => {
-            if (
-                _.isNumber(functionNode.start) &&
-                _.isNumber(functionNode.end)
-            ) {
+            if (isNumber(functionNode.start) && isNumber(functionNode.end)) {
                 if (functionNode.body.type === 'BlockStatement') {
                     return (
                         cursorLocationAsOffset >= functionNode.start &&
@@ -98,7 +101,7 @@ export function findEnclosingFunction(
 
         if (enclosingFunctions.length > 0) {
             //sort by "start"
-            const sortedByStart = _.sortBy(enclosingFunctions, 'start');
+            const sortedByStart = sortBy(enclosingFunctions, 'start');
 
             //return the last one, which will be the most enclosing one
             return sortedByStart[sortedByStart.length - 1];
@@ -112,13 +115,10 @@ function isFunctionAsync(functionNode: Function) {
     return functionNode.async;
 }
 
-function getFunctionText(
-    document: vscode.TextDocument,
-    functionNode: Function
-) {
-    if (_.isNumber(functionNode.start) && _.isNumber(functionNode.end)) {
+function getFunctionText(document: TextDocument, functionNode: Function) {
+    if (isNumber(functionNode.start) && isNumber(functionNode.end)) {
         return document.getText(
-            new vscode.Range(
+            new Range(
                 document.positionAt(functionNode.start),
                 document.positionAt(functionNode.end)
             )
@@ -127,22 +127,19 @@ function getFunctionText(
     return '';
 }
 
-function findAsyncRange(document: vscode.TextDocument, functionText: string) {
+function findAsyncRange(document: TextDocument, functionText: string) {
     const match = /\basync\s+/.exec(functionText);
     if (match) {
         const startOfAsync = match.index;
         const endOfAsync = match[0].length;
-        return new vscode.Range(
+        return new Range(
             document.positionAt(startOfAsync),
             document.positionAt(endOfAsync)
         );
     }
 }
 
-export async function removeAsync(
-    editor: vscode.TextEditor,
-    functionText: string
-) {
+export async function removeAsync(editor: TextEditor, functionText: string) {
     const asyncRange = findAsyncRange(editor.document, functionText);
     if (asyncRange) {
         await editor.edit(editBuilder => {
@@ -151,10 +148,10 @@ export async function removeAsync(
     }
 }
 export async function addAsync(
-    editor: vscode.TextEditor,
+    editor: TextEditor,
     startOfFunctionAsOffset: number | null
 ) {
-    if (_.isNumber(startOfFunctionAsOffset)) {
+    if (isNumber(startOfFunctionAsOffset)) {
         const startOfFunction = editor.document.positionAt(
             startOfFunctionAsOffset
         );
@@ -165,13 +162,13 @@ export async function addAsync(
 }
 
 async function toggleAsync() {
-    const currentEditor = utils.getCurrentEditor();
+    const currentEditor = getCurrentEditor();
 
     if (currentEditor) {
         const doc = currentEditor.document;
 
         const cursorLocationAsOffset = doc.offsetAt(
-            utils.getCursorPosition(currentEditor)
+            getCursorPosition(currentEditor)
         );
 
         const enclosingFunctionNode = findEnclosingFunction(
@@ -185,7 +182,7 @@ async function toggleAsync() {
             // const pos = doc.positionAt(
             //     enclosingFunctionNode.start as number
             // );
-            // utils.notify(`start: line=${pos.line}, char=${pos.character}`);
+            // notify(`start: line=${pos.line}, char=${pos.character}`);
 
             const startOfFunctionAsOffset = enclosingFunctionNode.start;
             if (isFunctionAsync(enclosingFunctionNode)) {
@@ -199,16 +196,16 @@ async function toggleAsync() {
                 await addAsync(currentEditor, startOfFunctionAsOffset);
             }
         } else {
-            // utils.notify('No enclosing function found');
+            // notify('No enclosing function found');
         }
     }
 }
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
     //register toggleAsync
-    utils.setupCommand('augmentfunctions.toggleAsync', toggleAsync, context);
+    addCommand('augmentfunctions.toggleAsync', toggleAsync, context);
 
     //register toggleExport
     //todo: implement toggleExport
