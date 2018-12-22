@@ -285,53 +285,63 @@ describe('findEnclosingFunction', () => {
 
     describe('Typescript', () => {
         const language = 'typescript';
-        const code = 'function foo(param: boolean): boolean { return param; }';
+        
+        describe('Regular Functions', () => {
+            const code =
+                'function foo(param: boolean): boolean { return param; }';
 
-        it('should return the function when cursor is at start of function', async () => {
-            const cursorPositionAsOffset = 0;
-            const expectedStartOfFunction = 0;
+            it('should return the function when cursor is at start of function', async () => {
+                const cursorPositionAsOffset = 0;
+                const expectedStartOfFunction = 0;
 
-            const enclosingFunction = myExtension.findEnclosingFunction(
-                code,
-                language,
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                assert.equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                assert.fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                const enclosingFunction = myExtension.findEnclosingFunction(
+                    code,
+                    language,
+                    cursorPositionAsOffset
                 );
-            }
-        });
+                if (enclosingFunction) {
+                    assert.equal(
+                        enclosingFunction.start,
+                        expectedStartOfFunction
+                    );
+                } else {
+                    assert.fail(
+                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                    );
+                }
+            });
 
-        it('should return the function when cursor is in middle of function', async () => {
-            const cursorPositionAsOffset = Math.round(code.length / 2);
-            const expectedStartOfFunction = 0;
+            it('should return the function when cursor is in middle of function', async () => {
+                const cursorPositionAsOffset = Math.round(code.length / 2);
+                const expectedStartOfFunction = 0;
 
-            const enclosingFunction = myExtension.findEnclosingFunction(
-                code,
-                language,
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                assert.equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                assert.fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                const enclosingFunction = myExtension.findEnclosingFunction(
+                    code,
+                    language,
+                    cursorPositionAsOffset
                 );
-            }
-        });
+                if (enclosingFunction) {
+                    assert.equal(
+                        enclosingFunction.start,
+                        expectedStartOfFunction
+                    );
+                } else {
+                    assert.fail(
+                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                    );
+                }
+            });
 
-        it('should return null when cursor is at end of function', async () => {
-            const cursorPositionAsOffset = code.length;
+            it('should return null when cursor is at end of function', async () => {
+                const cursorPositionAsOffset = code.length;
 
-            const enclosingFunction = myExtension.findEnclosingFunction(
-                code,
-                language,
-                cursorPositionAsOffset
-            );
-            assert.equal(enclosingFunction, null);
+                const enclosingFunction = myExtension.findEnclosingFunction(
+                    code,
+                    language,
+                    cursorPositionAsOffset
+                );
+                assert.equal(enclosingFunction, null);
+            });
         });
     });
 });
