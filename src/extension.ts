@@ -5,13 +5,13 @@ import * as babelParser from '@babel/parser';
 import * as _ from 'lodash';
 import { isFunction, Node, Function } from '@babel/types';
 
-function generateAst(code: string) {
+function generateAst(code: string, language: string) {
     //use try-catch b/c babel will throw an error if it can't parse the file
     //(ie. if it runs into a "SyntaxError" or something that it can't handle)
     //In this case, display a notification that an error occurred so that the
     //user knows why the command didn't work
     try {
-        return babelParser.parse(code, {
+        const parserOptions: babelParser.ParserOptions = {
             sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
 
             //make the parser as lenient as possible
@@ -19,7 +19,14 @@ function generateAst(code: string) {
             allowAwaitOutsideFunction: true,
             allowReturnOutsideFunction: true,
             allowSuperOutsideMethod: true,
-        });
+        };
+
+        //add "typescript" plugin if language is typescript
+        if (language === 'typescript') {
+            parserOptions.plugins = [ 'typescript' ];
+        }
+
+        return babelParser.parse(code, parserOptions);
     } catch (e) {
         utils.notify(
             `[${utils.getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
@@ -56,10 +63,11 @@ function extractAllFunctions(astNode: Node) {
 
 export function findEnclosingFunction(
     code: string,
+    language: string,
     cursorLocationAsOffset: number
 ) {
     //parse file
-    const ast = generateAst(code);
+    const ast = generateAst(code, language);
     if (ast) {
         const allFunctions = extractAllFunctions(ast);
 
@@ -168,6 +176,7 @@ async function toggleAsync() {
 
         const enclosingFunctionNode = findEnclosingFunction(
             doc.getText(),
+            doc.languageId,
             cursorLocationAsOffset
         );
 
