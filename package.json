@@ -1,6 +1,7 @@
 {
-    "name": "augment-functions",
+    "name": "augmentfunctions",
     "displayName": "Augment Functions",
+    "publisher": "dandoozan",
     "description": "Toggle \"export\" and \"async\" on functions",
     "version": "0.0.1",
     "engines": {
@@ -10,13 +11,13 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:augment-functions.toggleAsync"
+        "onCommand:augmentfunctions.toggleAsync"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "augment-functions.toggleAsync",
+                "command": "augmentfunctions.toggleAsync",
                 "title": "Toggle Async"
             }
         ]

@@ -208,7 +208,7 @@ async function toggleAsync() {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     //register toggleAsync
-    utils.setupCommand('augment-functions.toggleAsync', toggleAsync, context);
+    utils.setupCommand('augmentfunctions.toggleAsync', toggleAsync, context);
 
     //register toggleExport
     //todo: implement toggleExport
