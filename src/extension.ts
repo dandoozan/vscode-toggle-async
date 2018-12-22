@@ -120,12 +120,15 @@ function getFunctionText(
 }
 
 function findAsyncRange(document: vscode.TextDocument, functionText: string) {
-    const startOfAsync = functionText.indexOf('async ');
-    const endOfAsync = startOfAsync + 6; //6 is the length of "async "
-    return new vscode.Range(
-        document.positionAt(startOfAsync),
-        document.positionAt(endOfAsync)
-    );
+    const match = /\basync\s+/.exec(functionText);
+    if (match) {
+        const startOfAsync = match.index;
+        const endOfAsync = match[0].length;
+        return new vscode.Range(
+            document.positionAt(startOfAsync),
+            document.positionAt(endOfAsync)
+        );
+    }
 }
 
 export async function removeAsync(

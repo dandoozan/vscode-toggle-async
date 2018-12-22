@@ -268,4 +268,31 @@ describe('removeAsync', () => {
         assert.equal(doc.getText(), expectedEndingCode);
     });
 
+    it('should remove async from function when separated by a tab', async () => {
+        const startingCode = 'async	function foo() {}';
+        const expectedEndingCode = 'function foo() {}';
+
+        const doc = await vscode.workspace.openTextDocument({
+            content: startingCode,
+            language: 'javascript',
+        });
+        const editor = await vscode.window.showTextDocument(doc);
+
+        await myExtension.removeAsync(editor, startingCode);
+        assert.equal(doc.getText(), expectedEndingCode);
+    });
+
+    it('should remove async from function when separated by multiple spaces', async () => {
+        const startingCode = 'async  function foo() {}';
+        const expectedEndingCode = 'function foo() {}';
+
+        const doc = await vscode.workspace.openTextDocument({
+            content: startingCode,
+            language: 'javascript',
+        });
+        const editor = await vscode.window.showTextDocument(doc);
+
+        await myExtension.removeAsync(editor, startingCode);
+        assert.equal(doc.getText(), expectedEndingCode);
+    });
 });
