@@ -285,7 +285,7 @@ describe('findEnclosingFunction', () => {
 
     describe('Typescript', () => {
         const language = 'typescript';
-        
+
         describe('Regular Functions', () => {
             const code =
                 'function foo(param: boolean): boolean { return param; }';
@@ -373,7 +373,7 @@ describe('removeAsync', () => {
         });
         const editor = await vscode.window.showTextDocument(doc);
 
-        await myExtension.removeAsync(editor, startingCode);
+        await myExtension.removeAsync(editor, 0);
         assert.equal(doc.getText(), expectedEndingCode);
     });
 
@@ -387,7 +387,7 @@ describe('removeAsync', () => {
         });
         const editor = await vscode.window.showTextDocument(doc);
 
-        await myExtension.removeAsync(editor, startingCode);
+        await myExtension.removeAsync(editor, 0);
         assert.equal(doc.getText(), expectedEndingCode);
     });
 
@@ -401,7 +401,7 @@ describe('removeAsync', () => {
         });
         const editor = await vscode.window.showTextDocument(doc);
 
-        await myExtension.removeAsync(editor, startingCode);
+        await myExtension.removeAsync(editor, 0);
         assert.equal(doc.getText(), expectedEndingCode);
     });
 });

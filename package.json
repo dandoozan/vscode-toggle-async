@@ -3,7 +3,7 @@
     "displayName": "Augment Functions",
     "publisher": "dandoozan",
     "description": "Toggle \"export\" and \"async\" on functions",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "engines": {
         "vscode": "^1.30.0"
     },
@@ -27,7 +27,11 @@
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+        "test": "npm run compile && node ./node_modules/vscode/bin/test",
+        "updateAndInstall": "npm run bumpVersion && npm run createVsix && npm run installVsix",
+        "bumpVersion": "npm --no-git-tag-version version patch",
+        "createVsix": "vsce package",
+        "installVsix": "code --install-extension $npm_package_name-$npm_package_version.vsix"
     },
     "devDependencies": {
         "typescript": "^2.6.1",

@@ -127,38 +127,37 @@ function getFunctionText(document: TextDocument, functionNode: Function) {
     return '';
 }
 
-function findAsyncRange(document: TextDocument, functionText: string) {
-    const match = /\basync\s+/.exec(functionText);
+function findAsyncRange(document: TextDocument, startOfFunction: number) {
+    //get the text from the start of function all the way to the end of the file
+    const textFromStartOfFunctionToEndOfFile = document
+        .getText()
+        .substring(startOfFunction);
+
+    //find the first occurrence of "async "
+    const match = /\basync\s+/.exec(textFromStartOfFunctionToEndOfFile);
     if (match) {
         const startOfAsync = match.index;
-        const endOfAsync = match[0].length;
+        const endOfAsync = startOfAsync + match[0].length;
         return new Range(
-            document.positionAt(startOfAsync),
-            document.positionAt(endOfAsync)
+            document.positionAt(startOfFunction + startOfAsync),
+            document.positionAt(startOfFunction + endOfAsync)
         );
     }
 }
 
-export async function removeAsync(editor: TextEditor, functionText: string) {
-    const asyncRange = findAsyncRange(editor.document, functionText);
+export async function removeAsync(editor: TextEditor, startOfFunction: number) {
+    const asyncRange = findAsyncRange(editor.document, startOfFunction);
     if (asyncRange) {
         await editor.edit(editBuilder => {
             editBuilder.delete(asyncRange);
         });
     }
 }
-export async function addAsync(
-    editor: TextEditor,
-    startOfFunctionAsOffset: number | null
-) {
-    if (isNumber(startOfFunctionAsOffset)) {
-        const startOfFunction = editor.document.positionAt(
-            startOfFunctionAsOffset
-        );
-        await editor.edit(editBuilder => {
-            editBuilder.insert(startOfFunction, 'async ');
-        });
-    }
+export async function addAsync(editor: TextEditor, startOfFunction: number) {
+    const startPositionOfFunction = editor.document.positionAt(startOfFunction);
+    await editor.edit(editBuilder => {
+        editBuilder.insert(startPositionOfFunction, 'async ');
+    });
 }
 
 async function toggleAsync() {
@@ -166,37 +165,25 @@ async function toggleAsync() {
 
     if (currentEditor) {
         const doc = currentEditor.document;
+        const fullTextOfFile = doc.getText();
+        const languageOfFile = doc.languageId;
 
         const cursorLocationAsOffset = doc.offsetAt(
             getCursorPosition(currentEditor)
         );
 
         const enclosingFunctionNode = findEnclosingFunction(
-            doc.getText(),
-            doc.languageId,
+            fullTextOfFile,
+            languageOfFile,
             cursorLocationAsOffset
         );
 
-        if (enclosingFunctionNode) {
-            //tbx
-            // const pos = doc.positionAt(
-            //     enclosingFunctionNode.start as number
-            // );
-            // notify(`start: line=${pos.line}, char=${pos.character}`);
-
-            const startOfFunctionAsOffset = enclosingFunctionNode.start;
+        if (enclosingFunctionNode && isNumber(enclosingFunctionNode.start)) {
             if (isFunctionAsync(enclosingFunctionNode)) {
-                //if there is an async on the function, remove it
-                await removeAsync(
-                    currentEditor,
-                    getFunctionText(doc, enclosingFunctionNode)
-                );
+                await removeAsync(currentEditor, enclosingFunctionNode.start);
             } else {
-                //else, add "async" to the start of the function
-                await addAsync(currentEditor, startOfFunctionAsOffset);
+                await addAsync(currentEditor, enclosingFunctionNode.start);
             }
-        } else {
-            // notify('No enclosing function found');
         }
     }
 }
