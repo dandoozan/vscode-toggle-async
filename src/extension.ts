@@ -34,8 +34,9 @@ function generateAst(code: string, language: string) {
 
         return parse(code, parserOptions);
     } catch (e) {
+        console.log('​e=', e);
         notify(
-            `[${getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors and try again.`
+            `[${getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors in file and try again.`
         );
     }
     return null;
@@ -113,18 +114,6 @@ export function findEnclosingFunction(
 
 function isFunctionAsync(functionNode: Function) {
     return functionNode.async;
-}
-
-function getFunctionText(document: TextDocument, functionNode: Function) {
-    if (isNumber(functionNode.start) && isNumber(functionNode.end)) {
-        return document.getText(
-            new Range(
-                document.positionAt(functionNode.start),
-                document.positionAt(functionNode.end)
-            )
-        );
-    }
-    return '';
 }
 
 function findAsyncRange(document: TextDocument, startOfFunction: number) {
