@@ -347,13 +347,30 @@ describe('findEnclosingFunction', () => {
     });
 });
 
-
-
 describe('toggleAsync', () => {
     describe('Adding async', () => {
         it('should add async', async () => {
             const startingCode = 'function foo() {}';
             const expectedEndingCode = 'async function foo() {}';
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await vscode.window.showTextDocument(doc);
+
+            //set cursor position
+            setCursor(editor, 0);
+
+            await myExtension.toggleAsync();
+            assert.equal(doc.getText(), expectedEndingCode);
+        });
+
+        it('should add async when the function contains "await"', async () => {
+            const startingCode = 'function foo() { await Promise.resolve(true); }';
+            const expectedEndingCode = 'async function foo() { await Promise.resolve(true); }';
 
             const doc = await vscode.workspace.openTextDocument({
                 content: startingCode,
