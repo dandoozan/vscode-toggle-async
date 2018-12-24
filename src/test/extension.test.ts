@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as myExtension from '../extension';
+import { setCursor } from '../utils';
 
 describe('findEnclosingFunction', () => {
     describe('Javascript', () => {
@@ -346,62 +347,86 @@ describe('findEnclosingFunction', () => {
     });
 });
 
-describe('addAsync', () => {
-    it('should add async to function', async () => {
-        const startingCode = 'function foo() {}';
-        const expectedEndingCode = 'async function foo() {}';
 
-        const doc = await vscode.workspace.openTextDocument({
-            content: startingCode,
-            language: 'javascript',
+
+describe('toggleAsync', () => {
+    describe('Adding async', () => {
+        it('should add async', async () => {
+            const startingCode = 'function foo() {}';
+            const expectedEndingCode = 'async function foo() {}';
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await vscode.window.showTextDocument(doc);
+
+            //set cursor position
+            setCursor(editor, 0);
+
+            await myExtension.toggleAsync();
+            assert.equal(doc.getText(), expectedEndingCode);
         });
-        const editor = await vscode.window.showTextDocument(doc);
-
-        await myExtension.addAsync(editor, 0);
-        assert.equal(doc.getText(), expectedEndingCode);
-    });
-});
-
-describe('removeAsync', () => {
-    it('should remove async from function', async () => {
-        const startingCode = 'async function foo() {}';
-        const expectedEndingCode = 'function foo() {}';
-
-        const doc = await vscode.workspace.openTextDocument({
-            content: startingCode,
-            language: 'javascript',
-        });
-        const editor = await vscode.window.showTextDocument(doc);
-
-        await myExtension.removeAsync(editor, 0);
-        assert.equal(doc.getText(), expectedEndingCode);
     });
 
-    it('should remove async from function when separated by a tab', async () => {
-        const startingCode = 'async	function foo() {}';
-        const expectedEndingCode = 'function foo() {}';
+    describe('Removing async', () => {
+        it('should remove async', async () => {
+            const startingCode = 'async function foo() {}';
+            const expectedEndingCode = 'function foo() {}';
 
-        const doc = await vscode.workspace.openTextDocument({
-            content: startingCode,
-            language: 'javascript',
+            const doc = await vscode.workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await vscode.window.showTextDocument(doc);
+
+            //set cursor position
+            setCursor(editor, 0);
+
+            await myExtension.toggleAsync();
+            assert.equal(doc.getText(), expectedEndingCode);
         });
-        const editor = await vscode.window.showTextDocument(doc);
 
-        await myExtension.removeAsync(editor, 0);
-        assert.equal(doc.getText(), expectedEndingCode);
-    });
+        it('should remove async when separated by a tab', async () => {
+            const startingCode = 'async	function foo() {}';
+            const expectedEndingCode = 'function foo() {}';
 
-    it('should remove async from function when separated by multiple spaces', async () => {
-        const startingCode = 'async  function foo() {}';
-        const expectedEndingCode = 'function foo() {}';
+            const doc = await vscode.workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
 
-        const doc = await vscode.workspace.openTextDocument({
-            content: startingCode,
-            language: 'javascript',
+            //show it so that it's the "activeTextEditor"
+            const editor = await vscode.window.showTextDocument(doc);
+
+            //set cursor position
+            setCursor(editor, 0);
+
+            await myExtension.toggleAsync();
+            assert.equal(doc.getText(), expectedEndingCode);
         });
-        const editor = await vscode.window.showTextDocument(doc);
 
-        await myExtension.removeAsync(editor, 0);
-        assert.equal(doc.getText(), expectedEndingCode);
+        it('should remove async when separated by multiple spaces', async () => {
+            const startingCode = 'async  function foo() {}';
+            const expectedEndingCode = 'function foo() {}';
+
+            const doc = await vscode.workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await vscode.window.showTextDocument(doc);
+
+            //set cursor position
+            setCursor(editor, 0);
+
+            await myExtension.toggleAsync();
+            assert.equal(doc.getText(), expectedEndingCode);
+        });
     });
 });

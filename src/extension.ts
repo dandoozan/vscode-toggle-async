@@ -134,7 +134,7 @@ function findAsyncRange(document: TextDocument, startOfFunction: number) {
     }
 }
 
-export async function removeAsync(editor: TextEditor, startOfFunction: number) {
+async function removeAsync(editor: TextEditor, startOfFunction: number) {
     const asyncRange = findAsyncRange(editor.document, startOfFunction);
     if (asyncRange) {
         await editor.edit(editBuilder => {
@@ -142,14 +142,14 @@ export async function removeAsync(editor: TextEditor, startOfFunction: number) {
         });
     }
 }
-export async function addAsync(editor: TextEditor, startOfFunction: number) {
+async function addAsync(editor: TextEditor, startOfFunction: number) {
     const startPositionOfFunction = editor.document.positionAt(startOfFunction);
     await editor.edit(editBuilder => {
         editBuilder.insert(startPositionOfFunction, 'async ');
     });
 }
 
-async function toggleAsync() {
+export async function toggleAsync() {
     const currentEditor = getCurrentEditor();
 
     if (currentEditor) {
