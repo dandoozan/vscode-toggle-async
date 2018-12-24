@@ -1,6 +1,6 @@
-import * as assert from 'assert';
-import * as vscode from 'vscode';
-import * as myExtension from '../extension';
+import { findEnclosingFunction, toggleAsync } from '../extension';
+import { equal, fail } from 'assert';
+import { workspace, window } from 'vscode';
 import { setCursor } from '../utils';
 
 describe('findEnclosingFunction', () => {
@@ -14,18 +14,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = 0;
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -35,18 +35,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = Math.round(code.length / 2);
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -55,12 +55,12 @@ describe('findEnclosingFunction', () => {
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = code.length;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
-                assert.equal(enclosingFunction, null);
+                equal(enclosingFunction, null);
             });
         });
 
@@ -71,18 +71,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = 0;
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -92,18 +92,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = Math.round(code.length / 2);
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -112,12 +112,12 @@ describe('findEnclosingFunction', () => {
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = code.length;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
-                assert.equal(enclosingFunction, null);
+                equal(enclosingFunction, null);
             });
 
             it('should return the function when cursor at end of arrow function with no block', async () => {
@@ -126,18 +126,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = code.length;
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -160,18 +160,18 @@ describe('findEnclosingFunction', () => {
                     'function innerFunction'
                 );
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -183,18 +183,18 @@ describe('findEnclosingFunction', () => {
                     'function middleFunction'
                 );
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -206,18 +206,18 @@ describe('findEnclosingFunction', () => {
                     'function outerFunction'
                 );
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -233,18 +233,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = startOfFunction;
                 const expectedStartOfFunction = startOfFunction;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -254,18 +254,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = Math.round(code.length / 2);
                 const expectedStartOfFunction = startOfFunction;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -274,12 +274,12 @@ describe('findEnclosingFunction', () => {
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = endOfFunction;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
-                assert.equal(enclosingFunction, null);
+                equal(enclosingFunction, null);
             });
         });
     });
@@ -295,18 +295,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = 0;
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -316,18 +316,18 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = Math.round(code.length / 2);
                 const expectedStartOfFunction = 0;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    assert.equal(
+                    equal(
                         enclosingFunction.start,
                         expectedStartOfFunction
                     );
                 } else {
-                    assert.fail(
+                    fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
@@ -336,12 +336,12 @@ describe('findEnclosingFunction', () => {
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = code.length;
 
-                const enclosingFunction = myExtension.findEnclosingFunction(
+                const enclosingFunction = findEnclosingFunction(
                     code,
                     language,
                     cursorPositionAsOffset
                 );
-                assert.equal(enclosingFunction, null);
+                equal(enclosingFunction, null);
             });
         });
     });
@@ -353,38 +353,38 @@ describe('toggleAsync', () => {
             const startingCode = 'function foo() {}';
             const expectedEndingCode = 'async function foo() {}';
 
-            const doc = await vscode.workspace.openTextDocument({
+            const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
             });
 
             //show it so that it's the "activeTextEditor"
-            const editor = await vscode.window.showTextDocument(doc);
+            const editor = await window.showTextDocument(doc);
 
             //set cursor position
             setCursor(editor, 0);
 
-            await myExtension.toggleAsync();
-            assert.equal(doc.getText(), expectedEndingCode);
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
         });
 
         it('should add async when the function contains "await"', async () => {
             const startingCode = 'function foo() { await Promise.resolve(true); }';
             const expectedEndingCode = 'async function foo() { await Promise.resolve(true); }';
 
-            const doc = await vscode.workspace.openTextDocument({
+            const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
             });
 
             //show it so that it's the "activeTextEditor"
-            const editor = await vscode.window.showTextDocument(doc);
+            const editor = await window.showTextDocument(doc);
 
             //set cursor position
             setCursor(editor, 0);
 
-            await myExtension.toggleAsync();
-            assert.equal(doc.getText(), expectedEndingCode);
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
         });
     });
 
@@ -393,57 +393,57 @@ describe('toggleAsync', () => {
             const startingCode = 'async function foo() {}';
             const expectedEndingCode = 'function foo() {}';
 
-            const doc = await vscode.workspace.openTextDocument({
+            const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
             });
 
             //show it so that it's the "activeTextEditor"
-            const editor = await vscode.window.showTextDocument(doc);
+            const editor = await window.showTextDocument(doc);
 
             //set cursor position
             setCursor(editor, 0);
 
-            await myExtension.toggleAsync();
-            assert.equal(doc.getText(), expectedEndingCode);
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
         });
 
         it('should remove async when separated by a tab', async () => {
             const startingCode = 'async	function foo() {}';
             const expectedEndingCode = 'function foo() {}';
 
-            const doc = await vscode.workspace.openTextDocument({
+            const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
             });
 
             //show it so that it's the "activeTextEditor"
-            const editor = await vscode.window.showTextDocument(doc);
+            const editor = await window.showTextDocument(doc);
 
             //set cursor position
             setCursor(editor, 0);
 
-            await myExtension.toggleAsync();
-            assert.equal(doc.getText(), expectedEndingCode);
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
         });
 
         it('should remove async when separated by multiple spaces', async () => {
             const startingCode = 'async  function foo() {}';
             const expectedEndingCode = 'function foo() {}';
 
-            const doc = await vscode.workspace.openTextDocument({
+            const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
             });
 
             //show it so that it's the "activeTextEditor"
-            const editor = await vscode.window.showTextDocument(doc);
+            const editor = await window.showTextDocument(doc);
 
             //set cursor position
             setCursor(editor, 0);
 
-            await myExtension.toggleAsync();
-            assert.equal(doc.getText(), expectedEndingCode);
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
         });
     });
 });

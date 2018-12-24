@@ -12,14 +12,15 @@ import {
 } from './utils';
 
 function generateAst(code: string, language: string) {
-    //first, remove all "await"s (and replace them with spaces of the same
+    //First, remove all "await"s (and replace them with spaces of the same
     //length) in order to avoid a very common SyntaxError that is generated when
-    //there is an "await" inside of a non-async function; indeed, I bet that
-    //almost every use of this extension is in that exact case when there's an
-    //"await" inside a non-async function.
-
-    //NOTE: this does not affect the text in the file -- this is just prepping
-    //the code that is fed into the AST parser.
+    //there is an "await" inside of a non-async function; indeed, that scenario
+    //is the exact reason I made this extension (ie. when I had an "await"
+    //inside a non-async function and needed to add "async" to it).
+    //NOTE: this does not affect the text in the actual file--this is just
+    //prepping the code that is fed into the AST parser.  Replacing the removed
+    //"await"s with spaces ensures that the "start" and "end" locations of all
+    //the functions remain same.
     code = code.replace(/\bawait\b/g, match => ' '.repeat(match.length));
 
     //use try-catch b/c babel will throw an error if it can't parse the file
