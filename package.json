@@ -3,7 +3,7 @@
     "displayName": "Augment Functions",
     "publisher": "dandoozan",
     "description": "Toggle \"export\" and \"async\" on functions",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "engines": {
         "vscode": "^1.30.0"
     },
