@@ -2,56 +2,16 @@
 import { isFunction, Node, Function } from '@babel/types';
 import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
 import { isArray, isObject, isNumber, sortBy } from 'lodash';
-import { parse, ParserOptions } from '@babel/parser';
 import {
+    getCurrentEditor,
+    addCommand,
+    generateAst,
+    getLanguage,
+    getTextOfFile,
+    getCursorLocation,
     notify,
     getExtensionName,
-    getCurrentEditor,
-    getCursorPosition,
-    addCommand,
 } from './utils';
-
-function generateAst(code: string, language: string) {
-    //First, remove all "await"s (and replace them with spaces of the same
-    //length) in order to avoid a very common SyntaxError that is generated when
-    //there is an "await" inside of a non-async function; indeed, that scenario
-    //is the exact reason I made this extension (ie. when I had an "await"
-    //inside a non-async function and needed to add "async" to it).
-    //NOTE: this does not affect the text in the actual file--this is just
-    //prepping the code that is fed into the AST parser.  Replacing the removed
-    //"await"s with spaces ensures that the "start" and "end" locations of all
-    //the functions remain same.
-    code = code.replace(/\bawait\b/g, match => ' '.repeat(match.length));
-
-    //use try-catch b/c babel will throw an error if it can't parse the file
-    //(ie. if it runs into a "SyntaxError" or something that it can't handle)
-    //In this case, display a notification that an error occurred so that the
-    //user knows why the command didn't work
-    try {
-        const parserOptions: ParserOptions = {
-            sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
-
-            //make the parser as lenient as possible
-            allowImportExportEverywhere: true,
-            allowAwaitOutsideFunction: true,
-            allowReturnOutsideFunction: true,
-            allowSuperOutsideMethod: true,
-        };
-
-        //add "typescript" plugin if language is typescript
-        if (language === 'typescript') {
-            parserOptions.plugins = ['typescript'];
-        }
-
-        return parse(code, parserOptions);
-    } catch (e) {
-        console.log('​e=', e);
-        notify(
-            `[${getExtensionName()}] Failed to parse file to find enclosing function due to errors in the file. Please resolve errors in file and try again.`
-        );
-    }
-    return null;
-}
 
 function extractAllFunctions(astNode: Node) {
     let functions: Function[] = [];
@@ -79,13 +39,7 @@ function extractAllFunctions(astNode: Node) {
     return functions;
 }
 
-export function findEnclosingFunction(
-    code: string,
-    language: string,
-    cursorLocationAsOffset: number
-) {
-    //parse file
-    const ast = generateAst(code, language);
+export function findEnclosingFunction(ast, cursorLocation: number) {
     if (ast) {
         const allFunctions = extractAllFunctions(ast);
 
@@ -95,16 +49,16 @@ export function findEnclosingFunction(
             if (isNumber(functionNode.start) && isNumber(functionNode.end)) {
                 if (functionNode.body.type === 'BlockStatement') {
                     return (
-                        cursorLocationAsOffset >= functionNode.start &&
-                        cursorLocationAsOffset < functionNode.end
+                        cursorLocation >= functionNode.start &&
+                        cursorLocation < functionNode.end
                     );
                 } else {
                     //this is for the special case of an arrow function that has
                     //a body not surrounded by curly braces (eg. "() => true");
                     //in this case, the last char is still part of the function.
                     return (
-                        cursorLocationAsOffset >= functionNode.start &&
-                        cursorLocationAsOffset <= functionNode.end
+                        cursorLocation >= functionNode.start &&
+                        cursorLocation <= functionNode.end
                     );
                 }
             }
@@ -160,30 +114,56 @@ async function addAsync(editor: TextEditor, startOfFunction: number) {
     });
 }
 
+function prepFileTextForAstParsing(fullFileText: string) {
+    //Remove all "await"s (and replace them with spaces of the same
+    //length) in order to avoid a very common SyntaxError that is generated when
+    //there is an "await" inside of a non-async function; indeed, that scenario
+    //is the exact reason I made this extension (ie. when I had an "await"
+    //inside a non-async function and needed to add "async" to it). I'm
+    //replacing the removed "await"s with spaces to ensure that the "start" and
+    //"end" locations of all the functions remain same.
+    const textForAstParsing = fullFileText.replace(/\bawait\b/g, match =>
+        ' '.repeat(match.length)
+    );
+
+    return textForAstParsing;
+}
+
 export async function toggleAsync() {
     const currentEditor = getCurrentEditor();
 
     if (currentEditor) {
-        const doc = currentEditor.document;
-        const fullTextOfFile = doc.getText();
-        const languageOfFile = doc.languageId;
+        const fullFileText = getTextOfFile(currentEditor);
+        const textToFeedIntoAstParser = prepFileTextForAstParsing(fullFileText);
 
-        const cursorLocationAsOffset = doc.offsetAt(
-            getCursorPosition(currentEditor)
+        const ast = generateAst(
+            textToFeedIntoAstParser,
+            getLanguage(currentEditor)
         );
 
-        const enclosingFunctionNode = findEnclosingFunction(
-            fullTextOfFile,
-            languageOfFile,
-            cursorLocationAsOffset
-        );
+        if (ast) {
+            const enclosingFunctionNode = findEnclosingFunction(
+                ast,
+                getCursorLocation(currentEditor)
+            );
 
-        if (enclosingFunctionNode && isNumber(enclosingFunctionNode.start)) {
-            if (isFunctionAsync(enclosingFunctionNode)) {
-                await removeAsync(currentEditor, enclosingFunctionNode.start);
-            } else {
-                await addAsync(currentEditor, enclosingFunctionNode.start);
+            if (
+                enclosingFunctionNode &&
+                isNumber(enclosingFunctionNode.start)
+            ) {
+                if (isFunctionAsync(enclosingFunctionNode)) {
+                    await removeAsync(
+                        currentEditor,
+                        enclosingFunctionNode.start
+                    );
+                } else {
+                    await addAsync(currentEditor, enclosingFunctionNode.start);
+                }
             }
+        } else {
+            notify(
+                `[${getExtensionName()}] Failed to parse file to find enclosing function.  Please resolve any errors in the file and try again.`
+            );
         }
     }
 }
