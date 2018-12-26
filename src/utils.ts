@@ -1,1 +1,1 @@
-../../_CommonVSCodeExtensions_toSymlink/utils.ts
+../../_CommonVSCodeExtensions/src/utils.ts
