@@ -1,7 +1,7 @@
 'use strict';
 import { isFunction, Node, Function } from '@babel/types';
 import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
-import { isArray, isObject, isNumber, sortBy } from 'lodash';
+import { isArray, isObject, isNumber, maxBy } from 'lodash';
 import {
     getCurrentEditor,
     addCommand,
@@ -39,7 +39,7 @@ function extractAllFunctions(astNode: Node) {
     return functions;
 }
 
-export function findEnclosingFunction(ast, cursorLocation: number) {
+export function findEnclosingFunction(ast: Node | null, cursorLocation: number) {
     if (ast) {
         const allFunctions = extractAllFunctions(ast);
 
@@ -66,11 +66,9 @@ export function findEnclosingFunction(ast, cursorLocation: number) {
         });
 
         if (enclosingFunctions.length > 0) {
-            //sort by "start"
-            const sortedByStart = sortBy(enclosingFunctions, 'start');
-
-            //return the last one, which will be the most enclosing one
-            return sortedByStart[sortedByStart.length - 1];
+            //to get the "most" enclosing function, return the one with the
+            //latest "start" location
+            return maxBy(enclosingFunctions, 'start');
         }
     }
 
@@ -171,11 +169,7 @@ export async function toggleAsync() {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: ExtensionContext) {
-    //register toggleAsync
     addCommand('augmentfunctions.toggleAsync', toggleAsync, context);
-
-    //register toggleExport
-    //todo: implement toggleExport
 }
 
 // this method is called when your extension is deactivated
