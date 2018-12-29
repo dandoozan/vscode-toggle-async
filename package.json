@@ -3,7 +3,11 @@
     "displayName": "Toggle Async",
     "publisher": "dandoozan",
     "description": "Toggle \"async\" on functions",
-    "version": "0.0.5",
+    "version": "0.0.6",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dandoozan/vscode-toggle-async"
+    },
     "engines": {
         "vscode": "^1.30.0"
     },
@@ -19,6 +23,13 @@
             {
                 "command": "toggle-async.toggleAsync",
                 "title": "Toggle Async"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "toggle-async.toggleAsync",
+                "key": "ctrl-alt-a",
+                "mac": "cmd-alt-a"
             }
         ]
     },
