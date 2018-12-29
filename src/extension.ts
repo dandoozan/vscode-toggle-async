@@ -8,7 +8,7 @@ import {
     generateAst,
     getLanguage,
     getTextOfFile,
-    getCursorLocation,
+    getCursor,
     notify,
     getExtensionName,
 } from './utils';
@@ -39,7 +39,10 @@ function extractAllFunctions(astNode: Node) {
     return functions;
 }
 
-export function findEnclosingFunction(ast: Node | null, cursorLocation: number) {
+export function findEnclosingFunction(
+    ast: Node | null,
+    cursorLocation: number
+) {
     if (ast) {
         const allFunctions = extractAllFunctions(ast);
 
@@ -112,7 +115,7 @@ async function addAsync(editor: TextEditor, startOfFunction: number) {
     });
 }
 
-function prepFileTextForAstParsing(fullFileText: string) {
+function prepTextForAstParsing(fullFileText: string) {
     //Remove all "await"s (and replace them with spaces of the same
     //length) in order to avoid a very common SyntaxError that is generated when
     //there is an "await" inside of a non-async function; indeed, that scenario
@@ -128,21 +131,18 @@ function prepFileTextForAstParsing(fullFileText: string) {
 }
 
 export async function toggleAsync() {
-    const currentEditor = getCurrentEditor();
+    const editor = getCurrentEditor();
 
-    if (currentEditor) {
-        const fullFileText = getTextOfFile(currentEditor);
-        const textToFeedIntoAstParser = prepFileTextForAstParsing(fullFileText);
+    if (editor) {
+        const fullFileText = getTextOfFile(editor);
+        const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
 
-        const ast = generateAst(
-            textToFeedIntoAstParser,
-            getLanguage(currentEditor)
-        );
+        const ast = generateAst(textToFeedIntoAstParser, getLanguage(editor));
 
         if (ast) {
             const enclosingFunctionNode = findEnclosingFunction(
                 ast,
-                getCursorLocation(currentEditor)
+                getCursor(editor)
             );
 
             if (
@@ -150,12 +150,9 @@ export async function toggleAsync() {
                 isNumber(enclosingFunctionNode.start)
             ) {
                 if (isFunctionAsync(enclosingFunctionNode)) {
-                    await removeAsync(
-                        currentEditor,
-                        enclosingFunctionNode.start
-                    );
+                    await removeAsync(editor, enclosingFunctionNode.start);
                 } else {
-                    await addAsync(currentEditor, enclosingFunctionNode.start);
+                    await addAsync(editor, enclosingFunctionNode.start);
                 }
             }
         } else {
