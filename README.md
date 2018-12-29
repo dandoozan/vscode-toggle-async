@@ -1,8 +1,8 @@
 # Toggle Async
 
-This extension toggles "async" on functions.
+Toggle "async" on functions.
 
-//todo: add an animation
+![Demo](misc/screencast.gif)
 
 ## How to use:
 
