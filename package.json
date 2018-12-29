@@ -1,8 +1,8 @@
 {
-    "name": "augment-functions",
-    "displayName": "Augment Functions",
+    "name": "toggle-async",
+    "displayName": "Toggle Async",
     "publisher": "dandoozan",
-    "description": "Toggle \"export\" and \"async\" on functions",
+    "description": "Toggle \"async\" on functions",
     "version": "0.0.4",
     "engines": {
         "vscode": "^1.30.0"
@@ -11,13 +11,13 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:augmentfunctions.toggleAsync"
+        "onCommand:toggle-async.toggleAsync"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "augmentfunctions.toggleAsync",
+                "command": "toggle-async.toggleAsync",
                 "title": "Toggle Async"
             }
         ]

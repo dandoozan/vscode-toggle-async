@@ -166,7 +166,7 @@ export async function toggleAsync() {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: ExtensionContext) {
-    addCommand('augmentfunctions.toggleAsync', toggleAsync, context);
+    addCommand('toggle-async.toggleAsync', toggleAsync, context);
 }
 
 // this method is called when your extension is deactivated
