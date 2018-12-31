@@ -3,14 +3,14 @@ import { isFunction, Node, Function } from '@babel/types';
 import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
 import { isArray, isObject, isNumber, maxBy } from 'lodash';
 import {
-    getCurrentEditor,
     addCommand,
-    generateAst,
-    getLanguage,
-    getTextOfFile,
-    getCursor,
-    notify,
     getExtensionName,
+    getCurrentEditor,
+    getCursor,
+    getTextOfFile,
+    getLanguage,
+    generateAst,
+    notify,
 } from './utils';
 
 function extractAllFunctions(astNode: Node) {

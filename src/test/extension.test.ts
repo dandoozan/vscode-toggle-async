@@ -1,7 +1,7 @@
 import { findEnclosingFunction, toggleAsync } from '../extension';
 import { equal, fail } from 'assert';
 import { workspace, window } from 'vscode';
-import { setCursor, generateAst } from '../utils';
+import { generateAst } from '../utils';
 
 describe('findEnclosingFunction', () => {
     describe('Javascript', () => {
@@ -345,9 +345,6 @@ describe('toggleAsync', () => {
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
 
-            //set cursor position
-            setCursor(editor, 0);
-
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
         });
@@ -363,9 +360,6 @@ describe('toggleAsync', () => {
 
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
-
-            //set cursor position
-            setCursor(editor, 0);
 
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
@@ -385,9 +379,6 @@ describe('toggleAsync', () => {
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
 
-            //set cursor position
-            setCursor(editor, 0);
-
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
         });
@@ -404,9 +395,6 @@ describe('toggleAsync', () => {
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
 
-            //set cursor position
-            setCursor(editor, 0);
-
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
         });
@@ -422,9 +410,6 @@ describe('toggleAsync', () => {
 
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
-
-            //set cursor position
-            setCursor(editor, 0);
 
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
