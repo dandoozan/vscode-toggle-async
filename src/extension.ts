@@ -12,10 +12,18 @@ import {
     notify,
 } from './utils';
 
-const SUPPORTED_LANGUAGES = ['javascript', 'typescript'];
+
+const LANGUAGES = {
+    javascript: 'javascript',
+    typescript: 'typescript',
+}
 
 function isLanguageSupported(language: string) {
-    return SUPPORTED_LANGUAGES.indexOf(language) > -1;
+    return LANGUAGES[language];
+}
+
+function isTypescript(language: string) {
+    return language === LANGUAGES.typescript;
 }
 
 function extractAllFunctions(astNode: Node) {
@@ -45,7 +53,7 @@ function extractAllFunctions(astNode: Node) {
 }
 
 export function findEnclosingFunction(
-    ast: Node | null,
+    ast: Node | undefined,
     cursorLocation: number
 ) {
     if (ast) {
@@ -137,14 +145,13 @@ function prepTextForAstParsing(fullFileText: string) {
 
 export async function toggleAsync() {
     const editor = getCurrentEditor();
-
     if (editor) {
         const language = getLanguage(editor);
         if (isLanguageSupported(language)) {
             const fullFileText = getTextOfFile(editor);
             const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
 
-            const ast = generateAst(textToFeedIntoAstParser, language);
+            const ast = generateAst(textToFeedIntoAstParser, isTypescript(language));
 
             if (ast) {
                 const enclosingFunctionNode = findEnclosingFunction(
