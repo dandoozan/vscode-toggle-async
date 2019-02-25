@@ -31,7 +31,7 @@ export function getLanguage(editor: TextEditor) {
 }
 
 export function notify(msg: any) {
-    window.showInformationMessage('' + msg);
+    window.showInformationMessage(`[${getExtensionName()}] ${msg}`);
 }
 
 function isTypescript(language: string) {

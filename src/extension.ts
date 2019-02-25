@@ -4,7 +4,6 @@ import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
 import { isArray, isObject, isNumber, maxBy } from 'lodash';
 import {
     addCommand,
-    getExtensionName,
     getCurrentEditor,
     getCursor,
     getTextOfFile,
@@ -12,6 +11,12 @@ import {
     generateAst,
     notify,
 } from './utils';
+
+const SUPPORTED_LANGUAGES = ['javascript', 'typescript'];
+
+function isLanguageSupported(language: string) {
+    return SUPPORTED_LANGUAGES.indexOf(language) > -1;
+}
 
 function extractAllFunctions(astNode: Node) {
     let functions: Function[] = [];
@@ -134,31 +139,36 @@ export async function toggleAsync() {
     const editor = getCurrentEditor();
 
     if (editor) {
-        const fullFileText = getTextOfFile(editor);
-        const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
+        const language = getLanguage(editor);
+        if (isLanguageSupported(language)) {
+            const fullFileText = getTextOfFile(editor);
+            const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
 
-        const ast = generateAst(textToFeedIntoAstParser, getLanguage(editor));
+            const ast = generateAst(textToFeedIntoAstParser, language);
 
-        if (ast) {
-            const enclosingFunctionNode = findEnclosingFunction(
-                ast,
-                getCursor(editor)
-            );
+            if (ast) {
+                const enclosingFunctionNode = findEnclosingFunction(
+                    ast,
+                    getCursor(editor)
+                );
 
-            if (
-                enclosingFunctionNode &&
-                isNumber(enclosingFunctionNode.start)
-            ) {
-                if (isFunctionAsync(enclosingFunctionNode)) {
-                    await removeAsync(editor, enclosingFunctionNode.start);
-                } else {
-                    await addAsync(editor, enclosingFunctionNode.start);
+                if (
+                    enclosingFunctionNode &&
+                    isNumber(enclosingFunctionNode.start)
+                ) {
+                    if (isFunctionAsync(enclosingFunctionNode)) {
+                        await removeAsync(editor, enclosingFunctionNode.start);
+                    } else {
+                        await addAsync(editor, enclosingFunctionNode.start);
+                    }
                 }
+            } else {
+                notify(
+                    `Failed to parse file to find enclosing function.  Please resolve any errors in the file and try again.`
+                );
             }
         } else {
-            notify(
-                `[${getExtensionName()}] Failed to parse file to find enclosing function.  Please resolve any errors in the file and try again.`
-            );
+            notify(`The "${language}" language is not supported yet.`);
         }
     }
 }
