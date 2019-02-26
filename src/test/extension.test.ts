@@ -8,12 +8,32 @@ import {
 
 describe('findEnclosingFunction', () => {
     describe('Javascript', () => {
-        describe('Regular Functions', () => {
+        describe('Function Declaration', () => {
             const code = 'function foo() {}';
 
             it('should return the function when cursor is at start of function', async () => {
                 const cursorPositionAsOffset = 0;
                 const expectedStartOfFunction = 0;
+
+                const enclosingFunction = findEnclosingFunction(
+                    generateBabelAst(code),
+                    cursorPositionAsOffset
+                );
+                if (enclosingFunction) {
+                    equal(enclosingFunction.start, expectedStartOfFunction);
+                } else {
+                    fail(
+                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                    );
+                }
+            });
+        });
+        describe('Function Expression', () => {
+            const code = 'var foo = function() {}';
+
+            it('should return the function when cursor is at start of function', async () => {
+                const cursorPositionAsOffset = 10;
+                const expectedStartOfFunction = 10;
 
                 const enclosingFunction = findEnclosingFunction(
                     generateBabelAst(code),
