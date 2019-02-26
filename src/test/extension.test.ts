@@ -28,23 +28,6 @@ describe('findEnclosingFunction', () => {
                 }
             });
 
-            it('should return the function when cursor is in middle of function', async () => {
-                const cursorPositionAsOffset = Math.round(code.length / 2);
-                const expectedStartOfFunction = 0;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                if (enclosingFunction) {
-                    equal(enclosingFunction.start, expectedStartOfFunction);
-                } else {
-                    fail(
-                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                    );
-                }
-            });
-
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = code.length;
 
@@ -61,23 +44,6 @@ describe('findEnclosingFunction', () => {
 
             it('should return the function when cursor is at start of function', async () => {
                 const cursorPositionAsOffset = 0;
-                const expectedStartOfFunction = 0;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                if (enclosingFunction) {
-                    equal(enclosingFunction.start, expectedStartOfFunction);
-                } else {
-                    fail(
-                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                    );
-                }
-            });
-
-            it('should return the function when cursor is in middle of function', async () => {
-                const cursorPositionAsOffset = Math.round(code.length / 2);
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
@@ -126,10 +92,8 @@ describe('findEnclosingFunction', () => {
         describe('Nested Functions', () => {
             const code =
                 'function outerFunction() {\n' + //line 0
-                '    function middleFunction() {\n' + //line 1
-                '        function innerFunction() {\n' + //line 2
-                '            return true;\n' + //line 3
-                '        }\n' +
+                '    function innerFunction() {\n' + //line 2
+                '        return true;\n' + //line 3
                 '    }\n' +
                 '}\n';
 
@@ -137,25 +101,6 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = code.indexOf('innerFunction');
                 const expectedStartOfFunction = code.indexOf(
                     'function innerFunction'
-                );
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                if (enclosingFunction) {
-                    equal(enclosingFunction.start, expectedStartOfFunction);
-                } else {
-                    fail(
-                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                    );
-                }
-            });
-
-            it('should return middle function when cursor is in middle nested function', async () => {
-                const cursorPositionAsOffset = code.indexOf('middleFunction');
-                const expectedStartOfFunction = code.indexOf(
-                    'function middleFunction'
                 );
 
                 const enclosingFunction = findEnclosingFunction(
@@ -213,23 +158,6 @@ describe('findEnclosingFunction', () => {
                 }
             });
 
-            it('should return the function when cursor is in middle of function', async () => {
-                const cursorPositionAsOffset = Math.round(code.length / 2);
-                const expectedStartOfFunction = startOfFunction;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                if (enclosingFunction) {
-                    equal(enclosingFunction.start, expectedStartOfFunction);
-                } else {
-                    fail(
-                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                    );
-                }
-            });
-
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = endOfFunction;
 
@@ -263,24 +191,7 @@ describe('findEnclosingFunction', () => {
                     );
                 }
             });
-
-            it('should return the function when cursor is in middle of function', async () => {
-                const cursorPositionAsOffset = Math.round(code.length / 2);
-                const expectedStartOfFunction = 0;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code, true),
-                    cursorPositionAsOffset
-                );
-                if (enclosingFunction) {
-                    equal(enclosingFunction.start, expectedStartOfFunction);
-                } else {
-                    fail(
-                        `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                    );
-                }
-            });
-
+            
             it('should return null when cursor is at end of function', async () => {
                 const cursorPositionAsOffset = code.length;
 
