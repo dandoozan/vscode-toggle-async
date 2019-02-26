@@ -1,5 +1,6 @@
 import { ExtensionContext, commands, window, TextEditor } from 'vscode';
 import { parse, ParserOptions } from '@babel/parser';
+import { traverse, Node } from '@babel/types';
 
 export function addCommand(
     name: string,
@@ -34,7 +35,7 @@ export function notify(msg: any) {
     window.showInformationMessage(`[${getExtensionName()}] ${msg}`);
 }
 
-export function generateAst(code: string, isTypeScript: boolean = false) {
+export function generateBabelAst(code: string, isTypeScript: boolean = false) {
     //use try-catch b/c babel will throw an error if it can't parse the file
     //(ie. if it runs into a "SyntaxError" or something that it can't handle)
     //In this case, display a notification that an error occurred so that the
@@ -63,4 +64,15 @@ export function generateAst(code: string, isTypeScript: boolean = false) {
     } catch (error) {
         // console.log('​error=', error);
     }
+}
+
+export function traverseBabelAst(
+    babelAst: Node,
+    fnToApplyToEveryNode: Function
+) {
+    traverse(babelAst, {
+        enter(babelNode) {
+            fnToApplyToEveryNode(babelNode);
+        },
+    });
 }

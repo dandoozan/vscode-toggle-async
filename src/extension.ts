@@ -1,86 +1,61 @@
 'use strict';
-import { isFunction, Node, Function } from '@babel/types';
+import { isFunction, Node, Function, isBlockStatement } from '@babel/types';
 import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
-import { isArray, isObject, isNumber, maxBy } from 'lodash';
+import { isNumber, maxBy } from 'lodash';
 import {
     addCommand,
     getCurrentEditor,
     getCursor,
     getTextOfFile,
     getLanguage,
-    generateAst,
+    generateBabelAst,
     notify,
+    traverseBabelAst,
 } from './utils';
-
 
 const LANGUAGES = {
     javascript: 'javascript',
     typescript: 'typescript',
-}
+};
 
 function isLanguageSupported(language: string) {
-    return LANGUAGES[language];
+    return !!LANGUAGES[language];
 }
 
 function isTypescript(language: string) {
     return language === LANGUAGES.typescript;
 }
 
-function extractAllFunctions(astNode: Node) {
-    let functions: Function[] = [];
-
-    //if the current child is an array, just call extractAllFunctions on all
-    //it's elements
-    if (isArray(astNode)) {
-        //call extractAllFunctions on all children
-        for (const item of astNode) {
-            functions = functions.concat(extractAllFunctions(item));
-        }
-    } else if (isObject(astNode)) {
-        //check if it's a function node
-        if (isFunction(astNode)) {
-            //if so, add it to functions
-            functions.push(astNode);
-        }
-        //then call extractAllFunctions on all children
-        for (const key in astNode) {
-            if (astNode.hasOwnProperty(key)) {
-                functions = functions.concat(extractAllFunctions(astNode[key]));
-            }
+function isEnclosing(node: Function, cursor: number) {
+    if (node && isNumber(node.start) && isNumber(node.end)) {
+        if (isBlockStatement(node.body)) {
+            return cursor >= node.start && cursor < node.end;
+        } else {
+            //this is for the special case of an arrow function that has
+            //a body not surrounded by curly braces (eg. "() => true");
+            //in this case, the last char is still part of the function, so use "<="
+            return cursor >= node.start && cursor <= node.end;
         }
     }
+    return false;
+}
+
+function getEnclosingFunctions(ast: Node, cursor: number) {
+    let functions: Function[] = [];
+    traverseBabelAst(ast, (node: Node) => {
+        if (isFunction(node) && isEnclosing(node, cursor)) {
+            functions.push(node);
+        }
+    });
     return functions;
 }
 
-export function findEnclosingFunction(
-    ast: Node | undefined,
-    cursorLocation: number
-) {
+export function findEnclosingFunction(ast: Node | undefined, cursor: number) {
     if (ast) {
-        const allFunctions = extractAllFunctions(ast);
+        const enclosingFunctions = getEnclosingFunctions(ast, cursor);
 
         //enclosingFunctions will have more than one element when there are
         //nested functions
-        const enclosingFunctions = allFunctions.filter(functionNode => {
-            if (isNumber(functionNode.start) && isNumber(functionNode.end)) {
-                if (functionNode.body.type === 'BlockStatement') {
-                    return (
-                        cursorLocation >= functionNode.start &&
-                        cursorLocation < functionNode.end
-                    );
-                } else {
-                    //this is for the special case of an arrow function that has
-                    //a body not surrounded by curly braces (eg. "() => true");
-                    //in this case, the last char is still part of the function.
-                    return (
-                        cursorLocation >= functionNode.start &&
-                        cursorLocation <= functionNode.end
-                    );
-                }
-            }
-            return false;
-        });
-
         if (enclosingFunctions.length > 0) {
             //to get the "most" enclosing function, return the one with the
             //latest "start" location
@@ -150,8 +125,10 @@ export async function toggleAsync() {
         if (isLanguageSupported(language)) {
             const fullFileText = getTextOfFile(editor);
             const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
-
-            const ast = generateAst(textToFeedIntoAstParser, isTypescript(language));
+            const ast = generateBabelAst(
+                textToFeedIntoAstParser,
+                isTypescript(language)
+            );
 
             if (ast) {
                 const enclosingFunctionNode = findEnclosingFunction(

@@ -1,7 +1,7 @@
 import { findEnclosingFunction, toggleAsync } from '../extension';
 import { equal, fail } from 'assert';
 import { workspace, window } from 'vscode';
-import { generateAst } from '../utils';
+import { generateBabelAst } from '../utils';
 
 describe('findEnclosingFunction', () => {
     describe('Javascript', () => {
@@ -13,7 +13,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -33,7 +33,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -52,7 +52,7 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = code.length;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 equal(enclosingFunction, null);
@@ -67,7 +67,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -87,7 +87,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -106,7 +106,7 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = code.length;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 equal(enclosingFunction, null);
@@ -119,7 +119,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -152,7 +152,7 @@ describe('findEnclosingFunction', () => {
                 );
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -174,7 +174,7 @@ describe('findEnclosingFunction', () => {
                 );
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -196,7 +196,7 @@ describe('findEnclosingFunction', () => {
                 );
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -222,7 +222,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = startOfFunction;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -242,7 +242,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = startOfFunction;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -261,7 +261,7 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = endOfFunction;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code),
+                    generateBabelAst(code),
                     cursorPositionAsOffset
                 );
                 equal(enclosingFunction, null);
@@ -279,7 +279,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code, true),
+                    generateBabelAst(code, true),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -299,7 +299,7 @@ describe('findEnclosingFunction', () => {
                 const expectedStartOfFunction = 0;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code, true),
+                    generateBabelAst(code, true),
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
@@ -318,7 +318,7 @@ describe('findEnclosingFunction', () => {
                 const cursorPositionAsOffset = code.length;
 
                 const enclosingFunction = findEnclosingFunction(
-                    generateAst(code, true),
+                    generateBabelAst(code, true),
                     cursorPositionAsOffset
                 );
                 equal(enclosingFunction, null);
