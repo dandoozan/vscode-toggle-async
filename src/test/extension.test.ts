@@ -27,16 +27,6 @@ describe('findEnclosingFunction', () => {
                     );
                 }
             });
-
-            it('should return null when cursor is at end of function', async () => {
-                const cursorPositionAsOffset = code.length;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                equal(enclosingFunction, null);
-            });
         });
 
         describe('Arrow Functions', () => {
@@ -57,16 +47,6 @@ describe('findEnclosingFunction', () => {
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
-            });
-
-            it('should return null when cursor is at end of function', async () => {
-                const cursorPositionAsOffset = code.length;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                equal(enclosingFunction, null);
             });
 
             it('should return the function when cursor at end of arrow function with no block', async () => {
@@ -157,16 +137,6 @@ describe('findEnclosingFunction', () => {
                     );
                 }
             });
-
-            it('should return null when cursor is at end of function', async () => {
-                const cursorPositionAsOffset = endOfFunction;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code),
-                    cursorPositionAsOffset
-                );
-                equal(enclosingFunction, null);
-            });
         });
     });
 
@@ -190,16 +160,6 @@ describe('findEnclosingFunction', () => {
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
                     );
                 }
-            });
-            
-            it('should return null when cursor is at end of function', async () => {
-                const cursorPositionAsOffset = code.length;
-
-                const enclosingFunction = findEnclosingFunction(
-                    generateBabelAst(code, true),
-                    cursorPositionAsOffset
-                );
-                equal(enclosingFunction, null);
             });
         });
     });
