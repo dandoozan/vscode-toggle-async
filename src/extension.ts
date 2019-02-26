@@ -1,6 +1,6 @@
 'use strict';
 import { isFunction, Node, Function, isBlockStatement } from '@babel/types';
-import { TextDocument, Range, TextEditor, ExtensionContext } from 'vscode';
+import { Range, TextEditor, ExtensionContext } from 'vscode';
 import { isNumber, maxBy } from 'lodash';
 import {
     addCommand,
@@ -11,6 +11,7 @@ import {
     generateBabelAst,
     notify,
     traverseBabelAst,
+    getTextBetween,
 } from './utils';
 
 const LANGUAGES = {
@@ -69,38 +70,70 @@ export function findEnclosingFunction(ast: Node | undefined, cursor: number) {
 function isFunctionAsync(functionNode: Function) {
     return functionNode.async;
 }
+function isFunctionStatic(functionNode: Function) {
+    //note: i had to put "static" in quotes so that typescript doesn't complain
+    //(it thinks that there is never a "static" property on Function (but there
+    //is for static class methods (in typescript)!))
+    return functionNode['static'];
+}
 
-function findAsyncRange(document: TextDocument, startOfFunction: number) {
-    //get the text from the start of function all the way to the end of the file
-    const textFromStartOfFunctionToEndOfFile = document
-        .getText()
-        .substring(startOfFunction);
-
-    //find the first occurrence of "async "
-    const match = /\basync\s+/.exec(textFromStartOfFunctionToEndOfFile);
-    if (match) {
-        const startOfAsync = match.index;
-        const endOfAsync = startOfAsync + match[0].length;
-        return new Range(
-            document.positionAt(startOfFunction + startOfAsync),
-            document.positionAt(startOfFunction + endOfAsync)
+function findAsyncRange(editor: TextEditor, functionNode: Function) {
+    const startOfFunction = functionNode.start;
+    if (isNumber(startOfFunction)) {
+        const functionText = getTextBetween(
+            functionNode.start as number,
+            functionNode.end as number,
+            editor
         );
+
+        //find the first occurrence of "async "
+        const match = /\basync\s+/.exec(functionText);
+        if (match) {
+            const startOfAsync = match.index;
+            const endOfAsync = startOfAsync + match[0].length;
+            return new Range(
+                editor.document.positionAt(startOfFunction + startOfAsync),
+                editor.document.positionAt(startOfFunction + endOfAsync)
+            );
+        }
     }
 }
 
-async function removeAsync(editor: TextEditor, startOfFunction: number) {
-    const asyncRange = findAsyncRange(editor.document, startOfFunction);
+async function removeAsync(editor: TextEditor, functionNode: Function) {
+    const asyncRange = findAsyncRange(editor, functionNode);
     if (asyncRange) {
         await editor.edit(editBuilder => {
             editBuilder.delete(asyncRange);
         });
     }
 }
-async function addAsync(editor: TextEditor, startOfFunction: number) {
-    const startPositionOfFunction = editor.document.positionAt(startOfFunction);
-    await editor.edit(editBuilder => {
-        editBuilder.insert(startPositionOfFunction, 'async ');
-    });
+function findAsyncInsertPosition(editor: TextEditor, functionNode: Function) {
+    const startOfFunction = functionNode.start;
+    if (isNumber(startOfFunction)) {
+        //by default, insert "async" at the beginning of the function
+        let asyncInsertIndex = startOfFunction;
+
+        //but if the function is a static class method, then insert "async"
+        //after the "static" keyword
+        if (isFunctionStatic(functionNode)) {
+            const functionText = getTextBetween(
+                functionNode.start as number,
+                functionNode.end as number,
+                editor
+            );
+            asyncInsertIndex += functionText.search(/\bstatic\s/) + 7;
+        }
+
+        return editor.document.positionAt(asyncInsertIndex);
+    }
+}
+async function addAsync(editor: TextEditor, functionNode: Function) {
+    const asyncInsertPosition = findAsyncInsertPosition(editor, functionNode);
+    if (asyncInsertPosition) {
+        await editor.edit(editBuilder => {
+            editBuilder.insert(asyncInsertPosition, 'async ');
+        });
+    }
 }
 
 function prepTextForAstParsing(fullFileText: string) {
@@ -136,14 +169,11 @@ export async function toggleAsync() {
                     getCursor(editor)
                 );
 
-                if (
-                    enclosingFunctionNode &&
-                    isNumber(enclosingFunctionNode.start)
-                ) {
+                if (enclosingFunctionNode) {
                     if (isFunctionAsync(enclosingFunctionNode)) {
-                        await removeAsync(editor, enclosingFunctionNode.start);
+                        await removeAsync(editor, enclosingFunctionNode);
                     } else {
-                        await addAsync(editor, enclosingFunctionNode.start);
+                        await addAsync(editor, enclosingFunctionNode);
                     }
                 }
             } else {

@@ -1,7 +1,10 @@
 import { findEnclosingFunction, toggleAsync } from '../extension';
 import { equal, fail } from 'assert';
 import { workspace, window } from 'vscode';
-import { generateBabelAst } from '../utils';
+import {
+    generateBabelAst,
+    setCursor,
+} from '../utils';
 
 describe('findEnclosingFunction', () => {
     describe('Javascript', () => {
@@ -17,10 +20,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -37,10 +37,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -71,10 +68,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -91,10 +85,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -123,10 +114,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -156,10 +144,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -178,10 +163,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -200,10 +182,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -226,10 +205,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -246,10 +222,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -283,10 +256,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -303,10 +273,7 @@ describe('findEnclosingFunction', () => {
                     cursorPositionAsOffset
                 );
                 if (enclosingFunction) {
-                    equal(
-                        enclosingFunction.start,
-                        expectedStartOfFunction
-                    );
+                    equal(enclosingFunction.start, expectedStartOfFunction);
                 } else {
                     fail(
                         `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
@@ -346,8 +313,10 @@ describe('toggleAsync', () => {
         });
 
         it('should add async when the function contains "await"', async () => {
-            const startingCode = 'function foo() { await Promise.resolve(true); }';
-            const expectedEndingCode = 'async function foo() { await Promise.resolve(true); }';
+            const startingCode =
+                'function foo() { await Promise.resolve(true); }';
+            const expectedEndingCode =
+                'async function foo() { await Promise.resolve(true); }';
 
             const doc = await workspace.openTextDocument({
                 content: startingCode,
@@ -356,6 +325,24 @@ describe('toggleAsync', () => {
 
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
+
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
+        });
+
+        it('should add async when the function is a static method', async () => {
+            const startingCode = `class MyClass { static foo(){} }`;
+            const cursorPositionAsOffset = 16;
+            const expectedEndingCode = 'class MyClass { static async foo(){} }';
+
+            const doc = await workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await window.showTextDocument(doc);
+            await setCursor(editor, cursorPositionAsOffset);
 
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
@@ -406,6 +393,24 @@ describe('toggleAsync', () => {
 
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
+
+            await toggleAsync();
+            equal(doc.getText(), expectedEndingCode);
+        });
+
+        it('should remove async when the function is a static method', async () => {
+            const startingCode = `class MyClass { static async foo(){} }`;
+            const cursorPositionAsOffset = 16;
+            const expectedEndingCode = 'class MyClass { static foo(){} }';
+
+            const doc = await workspace.openTextDocument({
+                content: startingCode,
+                language: 'javascript',
+            });
+
+            //show it so that it's the "activeTextEditor"
+            const editor = await window.showTextDocument(doc);
+            await setCursor(editor, cursorPositionAsOffset);
 
             await toggleAsync();
             equal(doc.getText(), expectedEndingCode);
