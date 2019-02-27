@@ -44,10 +44,16 @@ describe('findEnclosingFunction', () => {
                 expectedStartOfFunction: 17,
             },
             {
-                desc: 'should return method',
+                desc: 'should return object method',
                 code: '({ foo() {} })',
                 cursorPosition: 3,
                 expectedStartOfFunction: 3,
+            },
+            {
+                desc: 'should return class method',
+                code: 'class MyClass { foo(){} }',
+                cursorPosition: 16,
+                expectedStartOfFunction: 16,
             },
         ],
         typescript: [
