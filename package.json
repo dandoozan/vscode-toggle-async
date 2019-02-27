@@ -5,6 +5,7 @@
     "description": "Toggle \"async\" on functions",
     "version": "1.0.4",
     "icon": "misc/icon.png",
+    "keywords": ["async", "function", "toggle", "javascript", "typescript"],
     "repository": {
         "type": "git",
         "url": "https://github.com/dandoozan/vscode-toggle-async"
