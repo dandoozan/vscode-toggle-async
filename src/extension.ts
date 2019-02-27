@@ -182,7 +182,7 @@ export async function toggleAsync() {
                 );
             }
         } else {
-            notify(`The "${language}" language is not supported yet.`);
+            notify(`Sorry, the "${language}" language is not supported.`);
         }
     }
 }
