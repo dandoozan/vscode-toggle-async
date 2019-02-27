@@ -4,6 +4,8 @@ Toggle "async" on functions.
 
 ![Demo](misc/screencast.gif)
 
+All function types are supported: function declarations, function expressions, arrow functions, methods, etc.
+
 ## How to use
 
 1.  Place your cursor anywhere in a function
