@@ -16,7 +16,8 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:toggle-async.toggleAsync"
+        "onLanguage:javascript",
+        "onLanguage:typescript"
     ],
     "main": "./out/extension",
     "contributes": {
