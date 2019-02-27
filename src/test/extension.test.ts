@@ -148,34 +148,77 @@ describe('findEnclosingFunction', () => {
             }
         });
     });
-});
 
-describe('Typescript', () => {
-    it('should return function declaration', async () => {
-        const code = 'function foo(param: boolean): boolean { return param; }';
-        const cursorPositionAsOffset = 0;
-        const expectedStartOfFunction = 0;
+    describe('Typescript', () => {
+        it('should return function declaration', async () => {
+            const code =
+                'function foo(param: boolean): boolean { return param; }';
+            const cursorPositionAsOffset = 0;
+            const expectedStartOfFunction = 0;
 
-        const enclosingFunction = findEnclosingFunction(
-            generateBabelAst(code, true),
-            cursorPositionAsOffset
-        );
-        if (enclosingFunction) {
-            equal(enclosingFunction.start, expectedStartOfFunction);
-        } else {
-            fail(
-                `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+            const enclosingFunction = findEnclosingFunction(
+                generateBabelAst(code, true),
+                cursorPositionAsOffset
             );
-        }
+            if (enclosingFunction) {
+                equal(enclosingFunction.start, expectedStartOfFunction);
+            } else {
+                fail(
+                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                );
+            }
+        });
     });
 });
 
 describe('toggleAsync', () => {
-    describe('Adding async', () => {
-        it('should add async', async () => {
-            const startingCode = 'function foo() {}';
-            const expectedEndingCode = 'async function foo() {}';
+    const testCases = [
+        {
+            desc: 'should add async',
+            startingCode: 'function foo() {}',
+            cursorPosition: 0,
+            endingCode: 'async function foo() {}',
+        },
+        {
+            desc: 'should add async when the function contains "await"',
+            startingCode: 'function foo() { await Promise.resolve(true); }',
+            cursorPosition: 0,
+            endingCode: 'async function foo() { await Promise.resolve(true); }',
+        },
+        {
+            desc: 'should add async when the function is a static method',
+            startingCode: 'class MyClass { static foo(){} }',
+            cursorPosition: 16,
+            endingCode: 'class MyClass { static async foo(){} }',
+        },
+        {
+            desc: 'should remove async',
+            startingCode: 'async function foo() {}',
+            cursorPosition: 0,
+            endingCode: 'function foo() {}',
+        },
+        {
+            desc: 'should remove async when separated by a tab',
+            startingCode: 'async	function foo() {}',
+            cursorPosition: 0,
+            endingCode: 'function foo() {}',
+        },
+        {
+            desc: 'should remove async when separated by multiple spaces',
+            startingCode: 'async  function foo() {}',
+            cursorPosition: 0,
+            endingCode: 'function foo() {}',
+        },
+        {
+            desc: 'should remove async when the function is a static method',
+            startingCode: 'class MyClass { static async foo(){} }',
+            cursorPosition: 16,
+            endingCode: 'class MyClass { static foo(){} }',
+        },
+    ];
 
+    testCases.forEach(({ desc, startingCode, cursorPosition, endingCode }) => {
+        it(desc, async () => {
             const doc = await workspace.openTextDocument({
                 content: startingCode,
                 language: 'javascript',
@@ -184,112 +227,11 @@ describe('toggleAsync', () => {
             //show it so that it's the "activeTextEditor"
             const editor = await window.showTextDocument(doc);
 
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-
-        it('should add async when the function contains "await"', async () => {
-            const startingCode =
-                'function foo() { await Promise.resolve(true); }';
-            const expectedEndingCode =
-                'async function foo() { await Promise.resolve(true); }';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
+            //set the cursor
+            await setCursor(editor, cursorPosition);
 
             await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-
-        it('should add async when the function is a static method', async () => {
-            const startingCode = `class MyClass { static foo(){} }`;
-            const cursorPositionAsOffset = 16;
-            const expectedEndingCode = 'class MyClass { static async foo(){} }';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
-            await setCursor(editor, cursorPositionAsOffset);
-
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-    });
-
-    describe('Removing async', () => {
-        it('should remove async', async () => {
-            const startingCode = 'async function foo() {}';
-            const expectedEndingCode = 'function foo() {}';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
-
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-
-        it('should remove async when separated by a tab', async () => {
-            const startingCode = 'async	function foo() {}';
-            const expectedEndingCode = 'function foo() {}';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
-
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-
-        it('should remove async when separated by multiple spaces', async () => {
-            const startingCode = 'async  function foo() {}';
-            const expectedEndingCode = 'function foo() {}';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
-
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
-        });
-
-        it('should remove async when the function is a static method', async () => {
-            const startingCode = `class MyClass { static async foo(){} }`;
-            const cursorPositionAsOffset = 16;
-            const expectedEndingCode = 'class MyClass { static foo(){} }';
-
-            const doc = await workspace.openTextDocument({
-                content: startingCode,
-                language: 'javascript',
-            });
-
-            //show it so that it's the "activeTextEditor"
-            const editor = await window.showTextDocument(doc);
-            await setCursor(editor, cursorPositionAsOffset);
-
-            await toggleAsync();
-            equal(doc.getText(), expectedEndingCode);
+            equal(doc.getText(), endingCode);
         });
     });
 });
