@@ -23,7 +23,7 @@ function isLanguageSupported(language: string) {
     return !!LANGUAGES[language];
 }
 
-function isTypescript(language: string) {
+export function isTypescript(language: string) {
     return language === LANGUAGES.typescript;
 }
 

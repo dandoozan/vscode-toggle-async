@@ -1,174 +1,84 @@
-import { findEnclosingFunction, toggleAsync } from '../extension';
+import { findEnclosingFunction, toggleAsync, isTypescript } from '../extension';
 import { equal, fail } from 'assert';
 import { workspace, window } from 'vscode';
 import { generateBabelAst, setCursor } from '../utils';
 
 describe('findEnclosingFunction', () => {
-    describe('Javascript', () => {
-        it('should return function declaration', async () => {
-            const code = 'function foo() {}';
-            const cursorPositionAsOffset = 0;
-            const expectedStartOfFunction = 0;
+    const testCases = {
+        javascript: [
+            {
+                desc: 'should return function declaration',
+                code: 'function foo() {}',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+            {
+                desc: 'should return function expression',
+                code: 'var foo = function() {}',
+                cursorPosition: 10,
+                expectedStartOfFunction: 10,
+            },
+            {
+                desc: 'should return arrow function',
+                code: '() => {}',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+            {
+                desc:
+                    'should return arrow function with no block when the cursor is at the end',
+                code: '() => true',
+                cursorPosition: 10,
+                expectedStartOfFunction: 0,
+            },
+            {
+                desc: 'should return nested outer function',
+                code: 'function foo() { function bar() {} }',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+            {
+                desc: 'should return nested inner function',
+                code: 'function foo() { function bar() {} }',
+                cursorPosition: 17,
+                expectedStartOfFunction: 17,
+            },
+            {
+                desc: 'should return method',
+                code: '({ foo() {} })',
+                cursorPosition: 3,
+                expectedStartOfFunction: 3,
+            },
+        ],
+        typescript: [
+            {
+                desc: 'should return function declaration',
+                code: 'function foo(param: boolean): boolean { return param; }',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+        ]
+    };
 
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
+    for (const language in testCases) {
+        describe(language, () => {
+            testCases[language].forEach(({ desc, code, cursorPosition, expectedStartOfFunction }) => {
+                it(desc, async () => {
+                    const enclosingFunction = findEnclosingFunction(
+                        generateBabelAst(code, isTypescript(language)),
+                        cursorPosition
+                    );
+                    if (enclosingFunction) {
+                        equal(enclosingFunction.start, expectedStartOfFunction);
+                    } else {
+                        fail(
+                            `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                        );
+                    }
+                });
+            });
         });
-
-        it('should return function expression', async () => {
-            const code = 'var foo = function() {}';
-            const cursorPositionAsOffset = 10;
-            const expectedStartOfFunction = 10;
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-
-        it('should return arrow function', async () => {
-            let code = '() => {}';
-            const cursorPositionAsOffset = 0;
-            const expectedStartOfFunction = 0;
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-
-        it('should return arrow function with no block when the cursor is at the end', async () => {
-            let code = '() => true';
-
-            const cursorPositionAsOffset = code.length;
-            const expectedStartOfFunction = 0;
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-
-        it('should return nested inner function', async () => {
-            const code =
-                'function outerFunction() {\n' + //line 0
-                '    function innerFunction() {\n' + //line 2
-                '        return true;\n' + //line 3
-                '    }\n' +
-                '}\n';
-            const cursorPositionAsOffset = code.indexOf('innerFunction');
-            const expectedStartOfFunction = code.indexOf(
-                'function innerFunction'
-            );
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-
-        it('should return nested outer function', async () => {
-            const code =
-                'function outerFunction() {\n' + //line 0
-                '    function innerFunction() {\n' + //line 2
-                '        return true;\n' + //line 3
-                '    }\n' +
-                '}\n';
-            const cursorPositionAsOffset = code.indexOf('outerFunction');
-            const expectedStartOfFunction = code.indexOf(
-                'function outerFunction'
-            );
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-
-        it('should return method', async () => {
-            const code = '({ foo() {} })';
-            const startOfFunction = 3;
-            const endOfFunction = 11;
-            const cursorPositionAsOffset = startOfFunction;
-            const expectedStartOfFunction = startOfFunction;
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-    });
-
-    describe('Typescript', () => {
-        it('should return function declaration', async () => {
-            const code =
-                'function foo(param: boolean): boolean { return param; }';
-            const cursorPositionAsOffset = 0;
-            const expectedStartOfFunction = 0;
-
-            const enclosingFunction = findEnclosingFunction(
-                generateBabelAst(code, true),
-                cursorPositionAsOffset
-            );
-            if (enclosingFunction) {
-                equal(enclosingFunction.start, expectedStartOfFunction);
-            } else {
-                fail(
-                    `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
-                );
-            }
-        });
-    });
+    }
 });
 
 describe('toggleAsync', () => {
