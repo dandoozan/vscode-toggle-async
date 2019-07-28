@@ -158,28 +158,31 @@ export async function toggleAsync() {
         if (isLanguageSupported(language)) {
             const fullFileText = getTextOfFile(editor);
             const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
-            const ast = generateBabelAst(
-                textToFeedIntoAstParser,
-                isTypescript(language)
+
+            let ast;
+            try {
+                ast = generateBabelAst(
+                    textToFeedIntoAstParser,
+                    isTypescript(language)
+                );
+            } catch (error) {
+                notify(
+                    `Failed to parse file to find enclosing function.  Error: ${error.toString()}`
+                );
+                return;
+            }
+
+            const enclosingFunctionNode = findEnclosingFunction(
+                ast,
+                getCursor(editor)
             );
 
-            if (ast) {
-                const enclosingFunctionNode = findEnclosingFunction(
-                    ast,
-                    getCursor(editor)
-                );
-
-                if (enclosingFunctionNode) {
-                    if (isFunctionAsync(enclosingFunctionNode)) {
-                        await removeAsync(editor, enclosingFunctionNode);
-                    } else {
-                        await addAsync(editor, enclosingFunctionNode);
-                    }
+            if (enclosingFunctionNode) {
+                if (isFunctionAsync(enclosingFunctionNode)) {
+                    await removeAsync(editor, enclosingFunctionNode);
+                } else {
+                    await addAsync(editor, enclosingFunctionNode);
                 }
-            } else {
-                notify(
-                    `Failed to parse file to find enclosing function.  Please resolve any errors in the file and try again.`
-                );
             }
         } else {
             notify(`Sorry, the "${language}" language is not supported.`);

@@ -1,4 +1,11 @@
-import { ExtensionContext, commands, window, TextEditor, Range, Selection } from 'vscode';
+import {
+    ExtensionContext,
+    commands,
+    window,
+    TextEditor,
+    Range,
+    Selection,
+} from 'vscode';
 import { parse, ParserOptions } from '@babel/parser';
 import { traverse, Node } from '@babel/types';
 import { isArray } from 'lodash';
@@ -88,11 +95,7 @@ export function generateBabelAst(code: string, isTypeScript: boolean = false) {
         ];
     }
 
-    try {
-        return parse(code, parserOptions);
-    } catch (error) {
-        // console.log('​error=', error);
-    }
+    return parse(code, parserOptions);
 }
 
 export function traverseBabelAst(
