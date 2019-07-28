@@ -72,10 +72,6 @@ export function notify(msg: any) {
 }
 
 export function generateBabelAst(code: string, isTypeScript: boolean = false) {
-    //use try-catch b/c babel will throw an error if it can't parse the file
-    //(ie. if it runs into a "SyntaxError" or something that it can't handle)
-    //In this case, display a notification that an error occurred so that the
-    //user knows why the command didn't work
     const parserOptions: ParserOptions = {
         sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
 
@@ -84,15 +80,33 @@ export function generateBabelAst(code: string, isTypeScript: boolean = false) {
         allowAwaitOutsideFunction: true,
         allowReturnOutsideFunction: true,
         allowSuperOutsideMethod: true,
+
+        //include plugins for experimental features so that the
+        //parser is more lenient when parsing code
+        plugins: [
+            'asyncGenerators',
+            'bigInt',
+            'classProperties',
+            'classPrivateProperties',
+            'classPrivateMethods',
+            'doExpressions',
+            'dynamicImport',
+            'exportDefaultFrom',
+            'exportNamespaceFrom',
+            'functionBind',
+            'functionSent',
+            'importMeta',
+            'nullishCoalescingOperator',
+            'numericSeparator',
+            'objectRestSpread',
+            'optionalCatchBinding',
+            'optionalChaining',
+            'throwExpressions',
+        ],
     };
 
-    //add "typescript" plugins if language is typescript
     if (isTypeScript) {
-        parserOptions.plugins = [
-            'typescript',
-            'classProperties',
-            'dynamicImport',
-        ];
+        (parserOptions.plugins as string[]).push('typescript');
     }
 
     return parse(code, parserOptions);
