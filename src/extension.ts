@@ -167,7 +167,7 @@ export async function toggleAsync() {
                 );
             } catch (error) {
                 notify(
-                    `Failed to parse file to find enclosing function.  Error: ${error.toString()}`
+                    `Failed to parse file to find enclosing function.  Error received from parser: "${error.toString()}"`
                 );
                 return;
             }
