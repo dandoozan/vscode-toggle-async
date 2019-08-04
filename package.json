@@ -3,7 +3,7 @@
     "displayName": "Toggle Async",
     "publisher": "dandoozan",
     "description": "Toggle \"async\" on functions",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "icon": "misc/icon.png",
     "keywords": [
         "async",
