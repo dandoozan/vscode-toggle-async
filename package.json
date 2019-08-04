@@ -51,8 +51,8 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
         "updateAndInstall": "npm run bumpVersion && npm run createVsix && npm run installVsix",
         "bumpVersion": "npm --no-git-tag-version version patch",
-        "createVsix": "vsce package",
-        "installVsix": "code --install-extension $npm_package_name-$npm_package_version.vsix"
+        "createVsix": "vsce package --out vsix/$npm_package_name-$npm_package_version.vsix",
+        "installVsix": "code --install-extension vsix/$npm_package_name-$npm_package_version.vsix"
     },
     "devDependencies": {
         "typescript": "^2.6.1",

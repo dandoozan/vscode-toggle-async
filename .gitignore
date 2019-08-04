@@ -1,7 +1,8 @@
-out
-node_modules
-.vscode-test/
-*.vsix
 .DS_Store
+.vscode
+.vscode-test/
+node_modules
+out
+vsix
 *.mov
-tbx*
+PRIVATE_*
