@@ -55,15 +55,15 @@
         "installVsix": "code --install-extension vsix/$npm_package_name-$npm_package_version.vsix"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.21",
-        "@types/node": "^8.10.25",
+        "@types/lodash": "^4.14.141",
         "@types/mocha": "^2.2.42",
-        "@types/lodash": "^4.14.119"
+        "@types/node": "^8.10.54",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.36"
     },
     "dependencies": {
-        "@babel/parser": "^7.2.2",
-        "@babel/types": "^7.2.2",
-        "lodash": "^4.17.11"
+        "@babel/parser": "^7.6.2",
+        "@babel/types": "^7.6.1",
+        "lodash": "^4.17.15"
     }
 }
