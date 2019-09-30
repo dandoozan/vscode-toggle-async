@@ -10,5 +10,5 @@
         "noImplicitAny": false,
         "resolveJsonModule": true
     },
-    "exclude": ["node_modules", ".vscode-test", "misc"]
+    "exclude": ["node_modules", ".vscode-test", "misc", "**/PRIVATE_*"]
 }
