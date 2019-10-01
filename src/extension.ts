@@ -18,10 +18,11 @@ const SUPPORTED_LANGUAGES = new Set([
     'javascript',
     'typescript',
     'javascriptreact',
+    'typescriptreact',
 ]);
 
 export function isTypescript(language: string) {
-    return language === 'typescript';
+    return language === 'typescript' || language === 'typescriptreact';
 }
 
 function isEnclosing(node: Function, cursor: number) {

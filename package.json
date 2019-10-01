@@ -26,6 +26,7 @@
         "onLanguage:javascript",
         "onLanguage:javascriptreact",
         "onLanguage:typescript",
+        "onLanguage:typescriptreact",
         "onCommand:toggle-async.toggleAsync"
     ],
     "main": "./out/extension",

@@ -72,6 +72,15 @@ describe('findEnclosingFunction', () => {
                 expectedStartOfFunction: 0,
             },
         ],
+        typescriptreact: [
+            {
+                desc: 'should return function declaration',
+                code:
+                    'function foo(contents: string) { return (<div>contents</div>); }',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+        ],
     };
 
     for (const language in testCases) {
