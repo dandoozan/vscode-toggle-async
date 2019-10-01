@@ -56,6 +56,14 @@ describe('findEnclosingFunction', () => {
                 expectedStartOfFunction: 16,
             },
         ],
+        javascriptreact: [
+            {
+                desc: 'should return function declaration',
+                code: 'function foo() { return (<div/>); }',
+                cursorPosition: 0,
+                expectedStartOfFunction: 0,
+            },
+        ],
         typescript: [
             {
                 desc: 'should return function declaration',
@@ -63,26 +71,31 @@ describe('findEnclosingFunction', () => {
                 cursorPosition: 0,
                 expectedStartOfFunction: 0,
             },
-        ]
+        ],
     };
 
     for (const language in testCases) {
         describe(language, () => {
-            testCases[language].forEach(({ desc, code, cursorPosition, expectedStartOfFunction }) => {
-                it(desc, async () => {
-                    const enclosingFunction = findEnclosingFunction(
-                        generateBabelAst(code, isTypescript(language)),
-                        cursorPosition
-                    );
-                    if (enclosingFunction) {
-                        equal(enclosingFunction.start, expectedStartOfFunction);
-                    } else {
-                        fail(
-                            `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+            testCases[language].forEach(
+                ({ desc, code, cursorPosition, expectedStartOfFunction }) => {
+                    it(desc, async () => {
+                        const enclosingFunction = findEnclosingFunction(
+                            generateBabelAst(code, isTypescript(language)),
+                            cursorPosition
                         );
-                    }
-                });
-            });
+                        if (enclosingFunction) {
+                            equal(
+                                enclosingFunction.start,
+                                expectedStartOfFunction
+                            );
+                        } else {
+                            fail(
+                                `findEnclosingFunction should return an object. It returned: ${enclosingFunction}`
+                            );
+                        }
+                    });
+                }
+            );
         });
     }
 });

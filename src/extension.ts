@@ -14,17 +14,14 @@ import {
     getTextBetween,
 } from './utils';
 
-const LANGUAGES = {
-    javascript: 'javascript',
-    typescript: 'typescript',
-};
-
-function isLanguageSupported(language: string) {
-    return !!LANGUAGES[language];
-}
+const SUPPORTED_LANGUAGES = new Set([
+    'javascript',
+    'typescript',
+    'javascriptreact',
+]);
 
 export function isTypescript(language: string) {
-    return language === LANGUAGES.typescript;
+    return language === 'typescript';
 }
 
 function isEnclosing(node: Function, cursor: number) {
@@ -155,7 +152,7 @@ export async function toggleAsync() {
     const editor = getCurrentEditor();
     if (editor) {
         const language = getLanguage(editor);
-        if (isLanguageSupported(language)) {
+        if (SUPPORTED_LANGUAGES.has(language)) {
             const fullFileText = getTextOfFile(editor);
             const textToFeedIntoAstParser = prepTextForAstParsing(fullFileText);
 

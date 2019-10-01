@@ -73,17 +73,21 @@ export function notify(msg: any) {
 
 export function generateBabelAst(code: string, isTypeScript: boolean = false) {
     const parserOptions: ParserOptions = {
-        sourceType: 'unambiguous', //auto-detect "script" files vs "module" files
+        sourceType: 'unambiguous', //auto-detect "script" vs "module" files
 
         //make the parser as lenient as possible
         allowImportExportEverywhere: true,
         allowAwaitOutsideFunction: true,
         allowReturnOutsideFunction: true,
         allowSuperOutsideMethod: true,
+        allowUndeclaredExports: true,
 
-        //include plugins for experimental features so that the
-        //parser is more lenient when parsing code
         plugins: [
+            // treat javascript files like jsx (since jsx is a superset of javascript)
+            'jsx',
+
+            //add experimental feature plugins (so that the
+            //parser is more lenient when parsing code)
             'asyncGenerators',
             'bigInt',
             'classProperties',
@@ -96,11 +100,13 @@ export function generateBabelAst(code: string, isTypeScript: boolean = false) {
             'functionBind',
             'functionSent',
             'importMeta',
+            'logicalAssignment',
             'nullishCoalescingOperator',
             'numericSeparator',
             'objectRestSpread',
             'optionalCatchBinding',
             'optionalChaining',
+            'partialApplication',
             'throwExpressions',
         ],
     };
